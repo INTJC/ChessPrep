@@ -1,23 +1,47 @@
-# ChessPrep Lab
+<p align="center">
+  <img src="docs/media/chessprep-lab-mark-192.png" alt="ChessPrep Lab icon" width="96">
+</p>
 
-一个本地静态网页，用来导入 Lichess 研讨 PGN，并测试你是否记住了自己的开局准备。
+<h1 align="center">ChessPrep Lab</h1>
 
-## Git 仓库说明
+<p align="center">
+  <strong>本地优先的国际象棋备战、开局记忆、残局训练和拟人对练工作台。</strong><br>
+  <strong>A local-first chess preparation workspace for opening recall, opponent prep, endgame training, and human-like sparring.</strong>
+</p>
 
-仓库保存核心源码、测试、构建脚本、图标/棋子资源，以及小型运行数据。下面这些内容属于本机生成或下载的 payload，不直接提交：
+<p align="center">
+  <a href="#zh">中文</a> ·
+  <a href="#en">English</a> ·
+  <a href="docs/media/chessprep-lab-demo.mp4">Demo Video</a>
+</p>
 
-- `data/player-prep/offline-games*`：本地备战对局数据库。
-- `data/player-prep/opening-trees/`：按棋手生成的开局树缓存。
-- `data/endgame-expansion/sources/raw/`：PGN 原始数据源。
-- `data/engine-calibration/*.json`：引擎校准输出。
-- `installer/package/`、`installer/package-release/`：完整离线安装器 payload。
-- `engines/stockfish*`、`engines/maia3/.conda/`、`engines/maia3/hf-cache/`：本地引擎和 Maia 模型缓存。
+<p align="center">
+  <a href="docs/media/chessprep-lab-demo.mp4">
+    <img src="docs/media/prep-workspace.png" alt="ChessPrep Lab preparation workspace" width="880">
+  </a>
+  <br>
+  <sub>Click the image to watch the generated demo video.</sub>
+</p>
 
-这些内容可以通过对应脚本或本机缓存重新生成。`data/player-prep/chinese-player-pinyin.json` 是备战搜索需要的小型索引，已经保留在仓库中。
+| Opening trainer | Endgame trainer | Prep workspace |
+| --- | --- | --- |
+| <img src="docs/media/opening-trainer.png" alt="Opening trainer interface"> | <img src="docs/media/endgame-trainer.png" alt="Endgame trainer interface"> | <img src="docs/media/prep-workspace.png" alt="Preparation workspace interface"> |
 
-## 启动
+## <a id="zh"></a>中文介绍
 
-在本目录运行：
+ChessPrep Lab 是一个本地运行的国际象棋训练工作台，用来把 Lichess Study、个人开局准备、对手历史对局、复杂残局和引擎对练放在同一个界面里。它默认只监听 `127.0.0.1`，不要求 Lichess token，也不保存登录信息。
+
+### 核心功能
+
+- **开局训练**：导入 Lichess Study PGN 后，系统把主线和变化树解析成可训练的准备库。你必须在棋盘上走出自己的准备着法，系统会按 PGN 变化树自动选择对手回应；走错时会提示当前位置的候选准备。
+- **备战检索**：离线检索对手历史对局，生成对手常走分支、样本数、胜率、和局率和得分率，再和你的准备库对照，帮助你优先补最可能遇到的线路。
+- **残局训练**：课程来自高水平实战局面，不是随机题库。每题从真实 FEN 开始，要求沿着可验证主线完成赢棋或守和目标。
+- **拟人训练 / 引擎训练**：从准备局面继续下，使用 Stockfish 或 Maia-3 23M 候选走法加 Stockfish 过滤，训练离开准备后的实战处理。
+- **双语界面**：应用界面支持中文和英文切换，适合本地自用、教学演示和小范围分享。
+
+### 快速启动
+
+在仓库根目录运行：
 
 ```powershell
 $env:PORT=8788; node server.mjs
@@ -29,11 +53,15 @@ $env:PORT=8788; node server.mjs
 http://localhost:8788
 ```
 
-默认启动只监听本机 `127.0.0.1`，不会把网站暴露到局域网或公网。
+如果 `8788` 被占用，可以换一个端口：
 
-## 数据规模
+```powershell
+$env:PORT=8790; node server.mjs
+```
 
-备战模式使用本机离线对局库做检索分析。当前开发机上的数据库状态如下：
+### 数据规模
+
+备战模式使用本机离线对局库做检索分析。当前开发机上的数据库状态：
 
 - 可检索对局：`2,706,692` 盘。
 - 已扫描数据源：`809` 个 PGN 源文件。
@@ -42,77 +70,77 @@ http://localhost:8788
 - 离线库体积：约 `1.15GB`。
 - 更新时间：`2026-06-09T15:45:56.767Z`。
 
-这些大数据文件不提交到 Git。仓库里保留的是检索、去重、开局树构建、报告生成的核心代码，以及 `data/player-prep/chinese-player-pinyin.json` 这个中国棋手拼音索引。
+这些大数据文件不直接提交到 Git；仓库保留核心源码、测试、构建脚本、图标、棋子资源和小型运行索引。
 
-## 开局训练
+### 隐私与导入
 
-开局训练解决的是“会看谱但不一定能在棋盘上走出来”的问题。用户把自己的 Lichess Study PGN 导入后，系统会把主线和变化树解析成可训练的准备库，然后要求用户在棋盘上实际走棋。
+私密研讨请从 Lichess 导出 PGN 后粘贴或上传。公开研讨可以粘贴 `https://lichess.org/study/...` 链接导入；链接导入需要通过 `node server.mjs` 启动，因为浏览器直接从 `localhost` 请求 Lichess 可能被跨域限制挡住。本地服务器只代理公开 PGN，不保存内容。
 
-训练流程：
+## <a id="en"></a>English Overview
 
-1. 从 Lichess Study 导出 PGN，粘贴、上传 `.pgn` 文件，或导入公开 Study 链接。
-2. 选择训练白方或黑方。
-3. 在棋盘上走自己的准备走法。
-4. 系统按 PGN 变化树自动选择对手回应。
-5. 如果走错，界面会提示当前位置可走的准备候选。
-6. 可以用回退功能逐步退回，重新练同一个分支。
+ChessPrep Lab is a local chess preparation workspace that brings Lichess Study imports, opening recall, opponent preparation, practical endgame courses, and engine sparring into one browser-based app. By default it listens only on `127.0.0.1`; it does not require a Lichess token and does not store login credentials.
 
-这个功能的重点不是“展示开局树”，而是把开局准备变成可重复测试的肌肉记忆：你必须在正确局面走出正确着法，不能只停留在读笔记。
+### What It Does
 
-## 备战检索
+- **Opening trainer**: import a Lichess Study PGN and turn the main lines and variations into a playable training tree. You make your prep moves on the board; the app chooses opponent replies from the PGN tree and shows candidate prep moves when you miss.
+- **Opponent preparation**: search an offline game database, build an opponent opening tree, and compare the opponent's most common branches against your own preparation.
+- **Endgame trainer**: train from real high-level game positions with verifiable solution lines, focused on practical conversion and defensive technique rather than one-move tactics.
+- **Human-like sparring**: continue from a prepared position against Stockfish or Maia-3 23M candidate moves filtered by Stockfish, so the training stays human-shaped without allowing obvious blunders.
+- **Bilingual interface**: the app UI supports Chinese and English for local training, teaching, and small-group demos.
 
-备战模式解决的是“明天碰到某个对手，我应该优先准备什么”的问题。它会把对手的历史对局整理成开局树，并和你的开局准备互相对照。
+### Quick Start
 
-当你准备执白时，系统先分析对手执黑面对你首步时常下什么。例如你走 `1.e4`，它会按出现次数和胜率列出对手的主要回应，如 `...c5`、`...e5`、`...e6`。你点击某个回应后，系统再自动进入你的准备库，检查你对这一路是否有准备。
-
-当你准备执黑时，逻辑反过来：系统先统计对手执白常下 `1.e4`、`1.d4`、`1.c4` 还是其他首步；你选择自己准备应对的体系后，再继续看对手在这个分支里最常怎么走。
-
-左侧开局树会随着棋盘每一步更新，显示当前位置对手实际下过的候选着法、样本数、胜率、和局率、得分率，并按样本从高到低排列。这样你优先补的是对手真正下过、样本最多、对结果影响最大的分支。
-
-## 残局训练
-
-残局训练解决的是“知道原则但实战不一定能兑现”的问题。课程不是随机题库，而是从高水平实战中整理出的残局任务，要求用户从真实局面开始，沿着可验证的主线完成赢棋或守和目标。
-
-训练内容包括：
-
-- 车活性、单车防守、车轻子协调、后残局、异色格象主动权、王的活性等常见实战主题。
-- 每道题都从一个具体 FEN 开始，要求按步骤走出主线。
-- 系统会校验每一步是否合法、是否符合当前题目的解法。
-- 题目保留来源信息，方便回溯到实战背景。
-
-这个功能的目的不是刷“第一感”战术，而是训练复杂残局中的连续决策：先找到计划，再在对手防守下把计划走完整。
-
-## 拟人训练 / 引擎训练
-
-拟人训练解决的是“准备到某一步之后，实战还要继续下”的问题。开局训练负责检查记忆，拟人训练负责从当前局面继续和一个更接近人类选择的对手下棋，检验你离开准备后的处理能力。
-
-可选档位：
-
-- `Stockfish 强引擎`：用于严肃检验局面质量，默认选择强引擎推荐。
-- `拟人 2200 / 2400 / 2600`：使用 Maia-3 23M 候选走法做基础，再用 Stockfish 过滤明显掉分的选择。界面保留原档位标注，后台实际强度整体上调 200 Elo。
-- `近似 2700`：使用 Stockfish 限强近似高水平人类，不伪装成 Maia。
-
-为什么要这样做：纯强引擎经常走出人类不容易理解的最优防守；纯随机或弱引擎又无法检验准备质量。拟人训练在“像人会下”和“不能明显送分”之间做平衡，更适合训练开局出谱后的实战转换。
-
-本地引擎路径：
-
-- `engines\stockfish.exe`
-- `engines\maia3\.conda`
-- `engines\maia3\hf-cache`
-
-Maia-3 使用 `https://hf-mirror.com` 缓存 Maia3-23M。需要重新缓存时运行：
+Run this from the repository root:
 
 ```powershell
-engines\maia3\cache-maia3-23m.cmd
+$env:PORT=8788; node server.mjs
 ```
 
-## 研讨导入与隐私
+Then open:
 
-网页不会要求你输入 Lichess token，也不会保存登录信息。私密研讨请从 Lichess 导出 PGN 后粘贴或上传。公开研讨可以粘贴 `https://lichess.org/study/...` 链接导入；链接导入需要用 `node server.mjs` 启动，因为浏览器直接从 `localhost` 请求 Lichess 可能被跨域限制挡住。本地服务器只代理公开 PGN，不保存内容。如果 `8788` 被占用，可以换成 `$env:PORT=8790; node server.mjs`。
+```text
+http://localhost:8788
+```
 
-## 测试
+If port `8788` is already in use:
 
-核心解析和训练逻辑可以用 Node 测试：
+```powershell
+$env:PORT=8790; node server.mjs
+```
+
+### Local Data
+
+Opponent prep uses a local offline game database. On the current development machine:
+
+- Searchable games: `2,706,692`.
+- Scanned PGN sources: `809`.
+- Imported PGN sources: `808`.
+- Duplicate games detected: `59,719`.
+- Offline database size: about `1.15GB`.
+- Last update: `2026-06-09T15:45:56.767Z`.
+
+Large generated datasets are intentionally not committed. The repository keeps the source code, tests, build scripts, icons, chess pieces, and small runtime indexes needed to rebuild or reconnect those local payloads.
+
+### Privacy And Importing
+
+For private studies, export PGN from Lichess and paste or upload it locally. Public studies can be imported from `https://lichess.org/study/...` links when the local Node server is running. The server only proxies public PGN content and does not persist imported studies.
+
+## Repository Notes
+
+The repository tracks the core app and documentation media. The following generated or downloaded payloads stay local and are ignored:
+
+- `data/player-prep/offline-games*`
+- `data/player-prep/opening-trees/`
+- `data/endgame-expansion/sources/raw/`
+- `data/engine-calibration/*.json`
+- `installer/package/`, `installer/package-release/`
+- `engines/stockfish*`, `engines/maia3/.conda/`, `engines/maia3/hf-cache/`
+
+`data/player-prep/chinese-player-pinyin.json` remains tracked because it is a small index used by prep search.
+
+## Tests
+
+Run the core parser and trainer tests with:
 
 ```powershell
 node --test tests\server.test.mjs tests\trainer-core.test.mjs
