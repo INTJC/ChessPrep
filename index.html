@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ChessPrep Lab</title>
+    <link rel="icon" href="assets/icons/chessprep-lab.ico" sizes="any">
+    <link rel="apple-touch-icon" href="assets/icons/chessprep-lab-mark-192.png">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <img class="brand-mark" src="assets/icons/chessprep-lab-mark.png" alt="" aria-hidden="true">
+          <div>
+            <p class="eyebrow">ChessPrep Lab</p>
+            <h1>ChessPrep Lab</h1>
+          </div>
+        </div>
+        <nav class="mode-switch" aria-label="训练模式" data-i18n-aria-label="mode.opening">
+          <button class="mode-button active" type="button" data-mode-switch="opening" data-i18n="mode.opening">开局训练</button>
+          <button class="mode-button" type="button" data-mode-switch="endgame" data-i18n="mode.endgame">残局训练</button>
+          <button class="mode-button" type="button" data-mode-switch="prep" data-i18n="mode.prep">备战模式</button>
+        </nav>
+        <nav class="language-switch" aria-label="Language" data-language-switch>
+          <button class="language-button active" type="button" data-language-option="zh" aria-pressed="true" data-i18n="lang.zh">中文</button>
+          <button class="language-button" type="button" data-language-option="en" aria-pressed="false" data-i18n="lang.en">English</button>
+        </nav>
+        <div class="top-status">
+          <span data-i18n="top.importStatus">导入状态</span>
+          <strong data-import-status data-i18n="status.notImported">尚未导入</strong>
+        </div>
+      </header>
+
+      <section class="workbench" aria-label="开局训练工作台" data-i18n-aria-label="opening.workbench">
+        <aside class="panel import-panel">
+          <div data-opening-left>
+            <div class="panel-heading">
+              <h2 data-i18n="opening.importStudy">导入研讨</h2>
+              <button class="ghost-button" type="button" data-sample data-i18n="opening.loadSample">载入示例</button>
+            </div>
+
+            <label class="field">
+              <span data-i18n="opening.pgnContent">PGN 内容</span>
+              <textarea data-pgn-input spellcheck="false" placeholder="从 Lichess Study 导出 PGN 后粘贴到这里，主线和变化线都会进入训练树。" data-i18n-placeholder="opening.pgnPlaceholder"></textarea>
+            </label>
+
+            <div class="button-row">
+              <button class="primary-button" type="button" data-import-pgn data-i18n="opening.importPgn">导入 PGN</button>
+              <label class="file-button">
+                <span data-i18n="opening.uploadPgn">上传 .pgn</span>
+                <input data-file-input type="file" accept=".pgn,text/plain,application/x-chess-pgn">
+              </label>
+              <button class="secondary-button wide" type="button" data-append-pgn data-i18n="opening.appendPgn">追加到当前研讨</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <label class="field">
+              <span data-i18n="opening.studyUrl">公开 Lichess Study 链接</span>
+              <input data-url-input type="url" placeholder="https://lichess.org/study/..." inputmode="url">
+            </label>
+            <button class="secondary-button" type="button" data-import-url data-i18n="opening.importFromUrl">从链接导入</button>
+
+            <div class="divider"></div>
+
+            <div class="side-picker" aria-label="训练执棋方" data-i18n-aria-label="opening.trainingSide">
+              <span data-i18n="opening.trainingSide">训练方</span>
+              <div>
+                <button class="segmented active" type="button" data-side="w" data-i18n="opening.white">白方</button>
+                <button class="segmented" type="button" data-side="b" data-i18n="opening.black">黑方</button>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <section class="saved-studies" aria-label="已保存研讨" data-i18n-aria-label="opening.savedStudies">
+              <div class="panel-heading compact">
+                <h2 data-i18n="opening.savedStudies">已保存研讨</h2>
+                <span data-saved-count>0</span>
+              </div>
+              <div class="saved-list" data-saved-list>
+                <p class="empty" data-i18n="opening.savedEmpty">导入后的研讨会自动保存在这里。</p>
+              </div>
+              <label class="field rename-field">
+                <span data-i18n="opening.studyName">当前研讨名称</span>
+                <div class="rename-row">
+                  <input data-study-name type="text" placeholder="选择或导入研讨后可改名" data-i18n-placeholder="opening.renamePlaceholder">
+                  <button class="secondary-button" type="button" data-rename-study data-i18n="opening.rename">改名</button>
+                </div>
+              </label>
+            </section>
+
+            <p class="note" data-i18n="opening.note">链接导入请用 $env:PORT=8788; node server.mjs 启动本地服务器。私密研讨请用 PGN 粘贴或上传；本页面不会保存你的 Lichess 登录信息。</p>
+          </div>
+
+          <div class="endgame-panel hidden" data-endgame-left>
+            <div class="panel-heading">
+              <h2 data-i18n="endgame.course">残局课程</h2>
+              <span data-endgame-count>0</span>
+            </div>
+            <div class="endgame-category-list" data-endgame-categories></div>
+            <div class="divider"></div>
+            <div class="endgame-lesson-list" data-endgame-lessons></div>
+          </div>
+
+          <div class="prep-panel hidden" data-prep-left>
+            <div class="panel-heading">
+              <h2 data-i18n="prep.database">线下棋谱库</h2>
+              <span data-prep-database-badge data-i18n="prep.notBuilt">未构建</span>
+            </div>
+            <div class="database-status" data-prep-database-status>
+              <strong data-i18n="prep.databaseStatus">数据库状态</strong>
+              <span data-i18n="prep.statusLoading">正在读取本地数据库状态...</span>
+            </div>
+            <button class="primary-button wide" type="button" data-build-prep-database data-i18n="prep.buildDatabase">构建/更新数据库</button>
+            <p class="note" data-i18n="prep.databaseNote">系统会从已下载的公开线下 PGN 源自动构建，不需要手动导入对手棋谱；过滤条件：2010 年之后，双方 Elo 都大于 2000。</p>
+            <div class="divider"></div>
+            <label class="field">
+              <span data-i18n="prep.opponent">对手姓名</span>
+              <input data-prep-opponent type="text" placeholder="例如 丁立人 / Ding Liren" data-i18n-placeholder="prep.opponentPlaceholder">
+            </label>
+            <div class="side-picker" aria-label="备战执棋方" data-i18n-aria-label="prep.ourSide">
+              <span data-i18n="prep.ourSide">我方执棋</span>
+              <div>
+                <button class="segmented active" type="button" data-prep-side="w" data-i18n="opening.white">白方</button>
+                <button class="segmented" type="button" data-prep-side="b" data-i18n="opening.black">黑方</button>
+              </div>
+            </div>
+            <button class="primary-button wide" type="button" data-run-prep-report data-i18n="prep.runReport">生成备战报告</button>
+            <section class="prep-common-replies" data-prep-common-replies>
+              <h3 data-i18n="prep.commonReplies">对手开局树</h3>
+              <p class="empty" data-i18n="prep.commonRepliesEmpty">生成报告后，这里会像 Lichess 开局树一样按当前局面更新：对手下过哪些步、次数、占比和得分率。</p>
+            </section>
+          </div>
+        </aside>
+
+        <section class="board-zone">
+          <div class="feedback" data-feedback data-tone="normal">先导入你的 Lichess 研讨 PGN，然后开始训练。</div>
+          <div class="current-line-panel" aria-label="当前 PGN" data-i18n-aria-label="opening.currentPgn">
+            <div class="current-line-head">
+              <span data-i18n="opening.currentPgn">当前 PGN</span>
+              <div class="current-line-actions">
+                <button class="link-button" type="button" data-back-step data-i18n="opening.backStep">退一步</button>
+                <button class="link-button" type="button" data-copy-pgn data-i18n="opening.copyPgn">复制 PGN</button>
+              </div>
+            </div>
+            <p class="current-line" data-current-line data-i18n="opening.currentLineEmpty">尚未开始本轮走法</p>
+          </div>
+          <div class="board-slot">
+            <div class="board-frame">
+              <div class="board-wrap">
+                <div class="rank-labels" data-rank-labels aria-hidden="true"></div>
+                <div class="board" data-board aria-label="棋盘" data-i18n-aria-label="opening.currentPgn"></div>
+                <div class="file-labels" data-file-labels aria-hidden="true"></div>
+              </div>
+            </div>
+            <div class="promotion-picker hidden" data-promotion-picker aria-label="选择升变棋子"></div>
+          </div>
+          <div class="move-strip" data-history>
+            <span class="muted" data-i18n="opening.historyEmpty">导入后会显示本轮走法记录</span>
+          </div>
+        </section>
+
+        <aside class="panel training-panel">
+          <div data-opening-right>
+            <div class="panel-heading">
+              <h2 data-i18n="opening.trainingStatus">训练状态</h2>
+              <span class="live-dot" data-i18n="opening.optionalBranches">可选分支</span>
+            </div>
+
+            <p class="current-task" data-status data-i18n="opening.waiting">等待导入 PGN 或 Lichess Study</p>
+
+            <div class="stats-grid" data-stats>
+              <div><strong>100%</strong><span data-i18n="stats.accuracy">正确率</span></div>
+              <div><strong>0</strong><span data-i18n="stats.streak">连对</span></div>
+              <div><strong>0</strong><span data-i18n="stats.mistakes">错步</span></div>
+              <div><strong>0/0</strong><span data-i18n="stats.coverage">覆盖</span></div>
+            </div>
+
+            <div class="answer-box">
+              <h3 data-i18n="opening.preparedCandidates">候选准备</h3>
+              <div class="answers" data-answers>
+                <p class="empty" data-i18n="opening.answersEmpty">走错或点击“显示答案”后，这里会列出准备走法。</p>
+              </div>
+            </div>
+
+            <div class="action-grid">
+              <button class="secondary-button" type="button" data-reset data-i18n="opening.reset">重置本轮</button>
+              <button class="secondary-button" type="button" data-reveal data-i18n="opening.reveal">显示答案</button>
+              <button class="primary-button wide" type="button" data-next data-i18n="opening.nextRandomLine">下一条随机线</button>
+            </div>
+
+            <section class="engine-card" aria-label="拟人训练" data-i18n-aria-label="engine.sparring">
+              <div class="panel-heading compact">
+                <h2 data-i18n="engine.sparring">拟人训练</h2>
+                <span data-engine-badge data-i18n="engine.idle">待机</span>
+              </div>
+              <p class="engine-status" data-engine-status data-i18n="engine.openingStatus">从当前局面开始，选择档位后点击开始。</p>
+              <div class="engine-profiles" data-engine-profiles></div>
+              <div class="engine-actions">
+                <button class="primary-button" type="button" data-engine-start data-i18n="engine.start">开始</button>
+                <button class="secondary-button" type="button" data-engine-stop data-i18n="engine.stop">退出</button>
+              </div>
+              <p class="engine-note" data-i18n="engine.note">2200-2700 档保留原标注；后台强度已整体上调 200 Elo，并使用更严格的搜索、采样和质量过滤。</p>
+            </section>
+          </div>
+
+          <div class="endgame-panel hidden" data-endgame-right>
+            <div class="panel-heading">
+              <h2 data-i18n="endgame.problem">残局题目</h2>
+              <span data-endgame-badge data-i18n="endgame.notStarted">待开始</span>
+            </div>
+            <div class="target-pill" data-endgame-target data-i18n="endgame.targetPending">目标：待选择</div>
+            <p class="current-task" data-endgame-status data-i18n="endgame.chooseCourse">选择左侧课程后开始。</p>
+            <div class="stats-grid" data-endgame-stats>
+              <div><strong>100%</strong><span data-i18n="stats.accuracy">正确率</span></div>
+              <div><strong>0</strong><span data-i18n="stats.streak">连对</span></div>
+              <div><strong>0</strong><span data-i18n="stats.mistakes">错步</span></div>
+              <div><strong>0/0</strong><span data-i18n="stats.progress">进度</span></div>
+            </div>
+            <div class="answer-box">
+              <h3 data-i18n="endgame.hintsAnswers">提示与答案</h3>
+              <div class="answers" data-endgame-answers>
+                <p class="empty" data-i18n="endgame.answersEmpty">走错或点击提示后，这里会显示训练信息。</p>
+              </div>
+            </div>
+            <div class="action-grid">
+              <button class="secondary-button" type="button" data-endgame-reset data-i18n="endgame.reset">重置本题</button>
+              <button class="secondary-button" type="button" data-endgame-hint data-i18n="endgame.hint">显示提示</button>
+              <button class="secondary-button" type="button" data-endgame-answer data-i18n="endgame.answer">显示答案</button>
+              <button class="primary-button" type="button" data-endgame-next data-i18n="endgame.next">下一题</button>
+            </div>
+            <article class="lesson-card" data-endgame-teaching>
+              <p class="empty" data-i18n="endgame.teachingEmpty">选择一个残局主题后，这里会显示教学重点。</p>
+            </article>
+            <section class="engine-card" aria-label="残局引擎对练" data-i18n-aria-label="endgame.engineSparring">
+              <div class="panel-heading compact">
+                <h2 data-i18n="endgame.engineSparring">引擎对练</h2>
+                <span data-engine-badge data-i18n="engine.idle">待机</span>
+              </div>
+              <p class="engine-status" data-engine-status data-i18n="endgame.engineStatus">从当前残局局面开始，选择档位后点击开始。</p>
+              <div class="engine-profiles" data-engine-profiles></div>
+              <div class="engine-actions">
+                <button class="primary-button" type="button" data-engine-start data-i18n="engine.start">开始</button>
+                <button class="secondary-button" type="button" data-engine-stop data-i18n="engine.stop">退出</button>
+              </div>
+              <p class="engine-note" data-i18n="endgame.engineNote">可在任意残局题面或走题中途开启；退出后会回到进入对练前的题目局面。</p>
+            </section>
+          </div>
+
+          <div class="prep-panel hidden" data-prep-right>
+            <div class="panel-heading">
+              <h2 data-i18n="prep.report">备战报告</h2>
+              <span data-prep-report-badge data-i18n="prep.waiting">待生成</span>
+            </div>
+            <p class="current-task" data-prep-status data-i18n="prep.status">先构建本地线下对局库，再输入对手并生成报告。</p>
+            <div class="stats-grid" data-prep-stats>
+              <div><strong>0</strong><span data-i18n="prep.sampleGames">样本</span></div>
+              <div><strong>0</strong><span data-i18n="prep.unseen">未见</span></div>
+              <div><strong>0</strong><span data-i18n="prep.weak">弱点</span></div>
+              <div><strong>0</strong><span data-i18n="prep.gaps">缺口</span></div>
+            </div>
+            <div class="prep-report-list" data-prep-report>
+              <p class="empty" data-i18n="prep.reportEmpty">报告会列出对手没下过的准备、低样本分支、表现差分支，以及你还没覆盖的对手常见选择。</p>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

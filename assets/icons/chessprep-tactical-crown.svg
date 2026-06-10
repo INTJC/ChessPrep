@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">ChessPrep Lab Tactical Crown icon</title>
+  <desc id="desc">A crown over a tactical chessboard with sharp preparation arrows.</desc>
+  <defs>
+    <linearGradient id="bg" x1="60" x2="452" y1="40" y2="486" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#241732"/>
+      <stop offset=".48" stop-color="#111827"/>
+      <stop offset="1" stop-color="#08272a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="142" x2="370" y1="91" y2="334" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff1bb"/>
+      <stop offset=".42" stop-color="#f0bd4d"/>
+      <stop offset="1" stop-color="#9c5c1b"/>
+    </linearGradient>
+    <linearGradient id="arrow" x1="120" x2="405" y1="322" y2="214" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#57e1d4"/>
+      <stop offset="1" stop-color="#7c83ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000814" flood-opacity=".55"/>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <path d="M76 370c63-49 137-75 222-78 49-1 94 5 136 19" fill="none" stroke="#7185a0" stroke-width="16" stroke-linecap="round" opacity=".2"/>
+  <g opacity=".25">
+    <path d="M110 348h292M98 389h316M137 312l-42 116M199 302l-22 138M265 298l16 141M327 306l48 119" stroke="#a5b8cc" stroke-width="8" stroke-linecap="round"/>
+    <path d="M98 389h316" stroke="#f0bd4d" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M141 219 178 113l61 72 17-91 43 91 61-72 11 106-47 63H188l-47-63z" fill="url(#gold)"/>
+    <path d="M172 255h168c14 0 25 11 25 25v10c0 14-11 25-25 25H172c-14 0-25-11-25-25v-10c0-14 11-25 25-25z" fill="#f4d37a"/>
+    <path d="M186 220h140" stroke="#fff7cf" stroke-width="9" stroke-linecap="round" opacity=".58"/>
+    <circle cx="178" cy="112" r="14" fill="#62e6d6"/>
+    <circle cx="256" cy="91" r="15" fill="#fff3c2"/>
+    <circle cx="360" cy="112" r="14" fill="#62e6d6"/>
+    <path d="M138 381c62-55 128-95 231-132" fill="none" stroke="url(#arrow)" stroke-width="22" stroke-linecap="round"/>
+    <path d="M368 249 321 238l32 38z" fill="#7c83ff"/>
+    <path d="M118 333c50-6 89-2 128 19" fill="none" stroke="#ff6b5f" stroke-width="18" stroke-linecap="round"/>
+    <path d="M246 352 203 327l14 47z" fill="#ff6b5f"/>
+    <path d="M236 396c6-30 22-51 50-64-20-12-32-30-30-55 2-30 28-56 62-64 11-2 23-2 36 0-6 15-5 27 3 37 5 7 16 14 23 22 13 14 13 34 1 49-8 10-20 17-36 20 10 17 14 35 14 55h-30c-1-29-11-46-30-54-20 8-34 25-39 54h-24z" fill="#f7e7ad"/>
+    <circle cx="322" cy="260" r="7" fill="#111827"/>
+    <path d="M187 317h138" stroke="#111827" stroke-width="11" stroke-linecap="round" opacity=".45"/>
+  </g>
+  <path d="M82 101c23-24 51-38 86-44" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity=".12"/>
+  <path d="M428 402c-22 24-51 39-87 45" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity=".12"/>
+  <g aria-label="ChessPrep Lab">
+    <path d="M93 395 405 378c21-1 39 15 40 36s-15 39-36 40L97 471c-21 1-39-15-40-36s15-39 36-40z" fill="#090d15" opacity=".88"/>
+    <path d="M105 409 393 393c14-1 26 10 27 24s-10 26-24 27l-288 16c-14 1-26-10-27-24s10-26 24-27z" fill="none" stroke="#f0bd4d" stroke-width="5"/>
+    <text x="255" y="439" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="850" fill="#fff0b8" transform="rotate(-3 255 439)">ChessPrep Lab</text>
+    <path d="M127 447 384 433" stroke="#57e1d4" stroke-width="4" stroke-linecap="round" opacity=".58"/>
+  </g>
+</svg>

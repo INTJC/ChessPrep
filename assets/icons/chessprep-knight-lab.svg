@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">ChessPrep Lab Knight Lab icon</title>
+  <desc id="desc">A stylized chess knight with an analysis orbit above a compact chessboard.</desc>
+  <defs>
+    <linearGradient id="bg" x1="48" x2="464" y1="32" y2="488" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#172435"/>
+      <stop offset=".48" stop-color="#0e1522"/>
+      <stop offset="1" stop-color="#1b1f30"/>
+    </linearGradient>
+    <linearGradient id="knight" x1="184" x2="382" y1="102" y2="382" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f7f2df"/>
+      <stop offset=".56" stop-color="#d9c37b"/>
+      <stop offset="1" stop-color="#9d6f2e"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="125" x2="390" y1="122" y2="250" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#62e6d6"/>
+      <stop offset="1" stop-color="#3a89ff"/>
+    </linearGradient>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#000814" flood-opacity=".5"/>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <path d="M78 372c38 32 84 52 141 59 77 10 151-8 217-54" fill="none" stroke="#2d3d54" stroke-width="18" stroke-linecap="round"/>
+  <g opacity=".42">
+    <path d="M126 340h260M112 378h288M99 416h314M153 315l-35 126M215 310l-18 137M279 310l18 137M341 315l35 126" fill="none" stroke="#52657d" stroke-width="8" stroke-linecap="round"/>
+    <path d="M126 340h260M99 416h314" fill="none" stroke="#d7b56d" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+  </g>
+
+  <g transform="rotate(-17 256 204)">
+    <ellipse cx="256" cy="204" rx="156" ry="54" fill="none" stroke="url(#cyan)" stroke-width="10" opacity=".92"/>
+    <circle cx="392" cy="178" r="13" fill="#62e6d6"/>
+    <circle cx="123" cy="229" r="8" fill="#d7b56d"/>
+  </g>
+  <g transform="rotate(16 256 199)" opacity=".72">
+    <ellipse cx="256" cy="199" rx="114" ry="38" fill="none" stroke="#d7b56d" stroke-width="6" stroke-dasharray="18 14"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <path fill="url(#knight)" d="M172 385c9-48 36-83 81-105-33-19-54-48-51-89 3-50 45-93 102-105 18-4 38-4 59 1-9 24-8 44 4 60 9 12 26 22 39 36 21 23 22 55 3 80-13 17-32 27-58 32 17 28 25 58 25 90h-48c-3-48-19-76-49-88-33 13-55 42-64 88h-43z"/>
+    <path fill="#0e1522" opacity=".78" d="M311 167c11 0 20 8 20 18 0 11-9 19-20 19s-20-8-20-19c0-10 9-18 20-18z"/>
+    <path d="M256 125c-16 26-23 55-18 87M278 116c-12 28-15 57-7 88M303 110c-5 30 1 57 16 82" fill="none" stroke="#76511e" stroke-width="9" stroke-linecap="round" opacity=".66"/>
+    <path d="M254 277c37 8 62 26 75 56" fill="none" stroke="#fff4c6" stroke-width="9" stroke-linecap="round" opacity=".45"/>
+  </g>
+  <path d="M94 97c31-31 70-46 116-46" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity=".1"/>
+  <path d="M418 407c-27 27-61 42-103 46" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity=".1"/>
+  <g aria-label="ChessPrep Lab">
+    <path d="M106 398h300c17 0 31 14 31 31v4c0 17-14 31-31 31H106c-17 0-31-14-31-31v-4c0-17 14-31 31-31z" fill="#070b12" opacity=".84"/>
+    <path d="M119 405h274c14 0 25 11 25 25s-11 25-25 25H119c-14 0-25-11-25-25s11-25 25-25z" fill="none" stroke="#d7b56d" stroke-width="4" opacity=".9"/>
+    <path d="M126 414h260" stroke="#62e6d6" stroke-width="4" stroke-linecap="round" opacity=".42"/>
+    <text x="256" y="442" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="850" fill="#f7edc3">ChessPrep Lab</text>
+  </g>
+</svg>

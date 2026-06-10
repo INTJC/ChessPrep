@@ -1,0 +1,39 @@
+# Runtime and build outputs
+dist/
+logs/
+downloads/
+*.zip
+*.exe
+*.out.log
+*.err.log
+
+# Local engines and model caches
+engines/stockfish*
+engines/maia3/.conda/
+engines/maia3/.venv/
+engines/maia3/hf-cache/
+
+# Generated offline installer payloads
+installer/package/
+installer/package-release/
+
+# Generated player-prep databases and caches
+data/player-prep/offline-games*
+data/player-prep/opening-trees/
+data/player-prep/fide/
+data/player-prep/*.log
+data/player-prep/*.out.json
+!data/player-prep/chinese-player-pinyin.json
+
+# Generated endgame source scans and draft artifacts
+data/endgame-expansion/sources/raw/
+data/endgame-expansion/reports/
+data/endgame-expansion/candidates/
+data/endgame-expansion/drafts/
+
+# Generated engine calibration outputs
+data/engine-calibration/*.json
+
+# Python caches
+__pycache__/
+*.pyc

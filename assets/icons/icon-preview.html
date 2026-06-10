@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ChessPrep Lab Icon Samples</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0d1118;
+        --panel: #151b25;
+        --line: #2a3444;
+        --text: #f4efe2;
+        --muted: #9aa6b5;
+        --gold: #d8b764;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+        background:
+          radial-gradient(circle at 20% 10%, rgba(86, 218, 204, .18), transparent 30%),
+          radial-gradient(circle at 80% 0%, rgba(216, 183, 100, .16), transparent 30%),
+          var(--bg);
+        color: var(--text);
+      }
+
+      main {
+        width: min(1180px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 44px 0;
+      }
+
+      header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 28px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 780;
+        letter-spacing: 0;
+      }
+
+      p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 18px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(21, 27, 37, .88);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, .28);
+        padding: 18px;
+      }
+
+      .samples {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+
+      .tile {
+        display: grid;
+        place-items: center;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, .08);
+      }
+
+      .tile.dark {
+        background: #090d14;
+      }
+
+      .tile.light {
+        background: #e8edf3;
+      }
+
+      img {
+        display: block;
+        width: min(82%, 148px);
+        height: auto;
+      }
+
+      .tiny img {
+        width: 42px;
+      }
+
+      .name {
+        margin: 0;
+        color: var(--text);
+        font-size: 17px;
+        font-weight: 760;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        margin-top: 10px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: rgba(216, 183, 100, .12);
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: 720;
+      }
+
+      .path {
+        margin-top: 12px;
+        color: #7f8b9b;
+        font-family: Consolas, "SFMono-Regular", monospace;
+        font-size: 12px;
+        overflow-wrap: anywhere;
+      }
+
+      @media (max-width: 980px) {
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 560px) {
+        main {
+          width: min(100% - 24px, 1180px);
+          padding: 24px 0;
+        }
+
+        header {
+          display: block;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>ChessPrep Lab Icon Samples</h1>
+          <p>Vector directions for the desktop shortcut, favicon, and app branding.</p>
+        </div>
+      </header>
+      <section class="grid">
+        <article class="card">
+          <div class="samples">
+            <div class="tile dark"><img src="chessprep-self-match-line.svg" alt="Self Match line icon"></div>
+            <div class="tile light"><img src="chessprep-self-match-line.svg" alt=""></div>
+            <div class="tile dark tiny"><img src="chessprep-self-match-line.svg" alt=""></div>
+            <div class="tile light tiny"><img src="chessprep-self-match-line.svg" alt=""></div>
+          </div>
+          <h2 class="name">Self Match Line</h2>
+          <p>A simplified line-art version with the same player-versus-self concept.</p>
+          <span class="tag">Simplified</span>
+          <div class="path">assets/icons/chessprep-self-match-line.svg</div>
+        </article>
+        <article class="card">
+          <div class="samples">
+            <div class="tile dark"><img src="chessprep-self-match.svg" alt="Self Match icon"></div>
+            <div class="tile light"><img src="chessprep-self-match.svg" alt=""></div>
+            <div class="tile dark tiny"><img src="chessprep-self-match.svg" alt=""></div>
+            <div class="tile light tiny"><img src="chessprep-self-match.svg" alt=""></div>
+          </div>
+          <h2 class="name">Self Match</h2>
+          <p>A player prepares across the board from a holographic version of himself.</p>
+          <span class="tag">New Direction</span>
+          <div class="path">assets/icons/chessprep-self-match.svg</div>
+        </article>
+        <article class="card">
+          <div class="samples">
+            <div class="tile dark"><img src="chessprep-knight-lab.svg" alt="Knight Lab icon"></div>
+            <div class="tile light"><img src="chessprep-knight-lab.svg" alt=""></div>
+            <div class="tile dark tiny"><img src="chessprep-knight-lab.svg" alt=""></div>
+            <div class="tile light tiny"><img src="chessprep-knight-lab.svg" alt=""></div>
+          </div>
+          <h2 class="name">Knight Lab</h2>
+          <p>Training lab identity, strongest fit for the current feature set.</p>
+          <span class="tag">Recommended</span>
+          <div class="path">assets/icons/chessprep-knight-lab.svg</div>
+        </article>
+        <article class="card">
+          <div class="samples">
+            <div class="tile dark"><img src="chessprep-prep-shield.svg" alt="Prep Shield icon"></div>
+            <div class="tile light"><img src="chessprep-prep-shield.svg" alt=""></div>
+            <div class="tile dark tiny"><img src="chessprep-prep-shield.svg" alt=""></div>
+            <div class="tile light tiny"><img src="chessprep-prep-shield.svg" alt=""></div>
+          </div>
+          <h2 class="name">Prep Shield</h2>
+          <p>More formal tournament preparation mark with a stable crest shape.</p>
+          <span class="tag">Tournament</span>
+          <div class="path">assets/icons/chessprep-prep-shield.svg</div>
+        </article>
+        <article class="card">
+          <div class="samples">
+            <div class="tile dark"><img src="chessprep-analysis-compass.svg" alt="Analysis Compass icon"></div>
+            <div class="tile light"><img src="chessprep-analysis-compass.svg" alt=""></div>
+            <div class="tile dark tiny"><img src="chessprep-analysis-compass.svg" alt=""></div>
+            <div class="tile light tiny"><img src="chessprep-analysis-compass.svg" alt=""></div>
+          </div>
+          <h2 class="name">Analysis Compass</h2>
+          <p>Best for route preparation, branch navigation, and analysis workflow.</p>
+          <span class="tag">Strategic</span>
+          <div class="path">assets/icons/chessprep-analysis-compass.svg</div>
+        </article>
+        <article class="card">
+          <div class="samples">
+            <div class="tile dark"><img src="chessprep-tactical-crown.svg" alt="Tactical Crown icon"></div>
+            <div class="tile light"><img src="chessprep-tactical-crown.svg" alt=""></div>
+            <div class="tile dark tiny"><img src="chessprep-tactical-crown.svg" alt=""></div>
+            <div class="tile light tiny"><img src="chessprep-tactical-crown.svg" alt=""></div>
+          </div>
+          <h2 class="name">Tactical Crown</h2>
+          <p>More aggressive GM-level visual language, built around tactics and ambition.</p>
+          <span class="tag">Bold</span>
+          <div class="path">assets/icons/chessprep-tactical-crown.svg</div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

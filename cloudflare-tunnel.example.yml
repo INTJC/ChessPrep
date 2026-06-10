@@ -1,0 +1,10 @@
+# Copy this to your cloudflared config directory and replace the placeholders.
+# The trainer itself stays local-only; Cloudflare Tunnel publishes the HTTPS URL.
+
+tunnel: YOUR_TUNNEL_ID_OR_NAME
+credentials-file: C:\Users\YOUR_USER\.cloudflared\YOUR_TUNNEL_ID.json
+
+ingress:
+  - hostname: gm.example.com
+    service: http://localhost:8788
+  - service: http_status:404
