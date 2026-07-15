@@ -66,6 +66,8 @@ test('repository and application expose AGPL licensing and third-party notices',
   assert.match(notices, /Stockfish/i);
   assert.match(notices, /GNU General Public License/i);
   assert.match(notices, /UofTCSSLab\/Maia3-79M/);
+  assert.match(notices, /Maia-3 model weights[\s\S]*GNU Affero General Public License version 3\.0/i);
+  assert.doesNotMatch(notices, /does not declare a license/i);
   assert.match(html, /href="LICENSE"/);
   assert.match(html, /href="THIRD_PARTY_NOTICES\.md"/);
   assert.match(html, /github\.com\/zhukaizhen\/ChessPrep/);

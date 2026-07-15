@@ -30,11 +30,12 @@ Stockfish's GPL source-availability requirements.
 - 23M model: https://huggingface.co/UofTCSSLab/Maia3-23M
 - 79M model: https://huggingface.co/UofTCSSLab/Maia3-79M
 - Mirror used by the offline build: https://hf-mirror.com
+- License: GNU Affero General Public License version 3.0
 
-As checked on 2026-07-15, the Hugging Face metadata for both model repositories
-does not declare a license. The ChessPrep Lab AGPL license does not grant rights
-to these model weights. Anyone redistributing an installer that contains the
-weights must independently confirm and comply with the model publisher's terms.
+The official model cards direct users to the Maia-3 source repository for the
+code/weights license. That repository is distributed under the GNU Affero
+General Public License version 3.0. The Hugging Face license metadata field is
+empty, but this does not override the license reference in the model cards.
 
 ## Bundled runtimes and Python packages
 
