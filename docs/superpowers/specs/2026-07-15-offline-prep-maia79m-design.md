@@ -39,7 +39,7 @@
 1. 现有项目环境：安装或更新参考 Maia-3 源码后，分别运行所需模型的缓存脚本。
 2. 自定义环境：设置 `MAIA3_PATH` 指向兼容的 UCI 入口，同时用 `MAIA3_MODEL` 指定模型。
 
-指南明确要求 Maia-3 源码版本必须包含 79M 注册项，可用 `maia3-uci --list-models` 验证。离线安装器仍只承诺捆绑和校验 23M；79M 是源码用户的可选配置，不改动现有安装器模型校验。
+指南明确要求 Maia-3 源码版本必须包含 79M 注册项，可用 `maia3-uci --list-models` 验证。Windows Release 同时提供互斥的 23M 与 79M 安装包；构建器和验证器确保每个包只包含并默认使用所选模型。
 
 ### 拟人训练配置
 
@@ -119,7 +119,7 @@ node --test tests\server.test.mjs tests\player-prep-builder.test.mjs tests\publi
 ## 不在本次范围
 
 - 不在网页中增加 23M/79M 选择器。
-- 不把 79M 模型打入现有离线安装器。
+- 不把 23M 和 79M 同时打入同一个安装包；两个 Release 资产分别携带一个模型。
 - 不重新校准各拟人档位的 Elo、采样或 Stockfish 过滤参数。
 - 不复制参考目录中的模型、Python 环境、Stockfish、PGN 或离线数据库。
 - 不改变公开数据源清单、默认年份和 Elo 筛选规则。

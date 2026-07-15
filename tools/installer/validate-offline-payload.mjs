@@ -12,11 +12,22 @@ const requiredRelativeFiles = [
   'runtime\\node\\node.exe',
   'engines\\stockfish.exe',
   'engines\\maia3\\maia3-uci.cmd',
+  'engines\\maia3\\default-model.txt',
   'engines\\maia3\\.conda\\python.exe'
 ];
 
-const maiaModelRoot = 'engines\\maia3\\hf-cache\\models--UofTCSSLab--Maia3-23M';
-const maiaModelFile = 'maia3-23m.pt';
+const maiaModels = {
+  '23m': {
+    alias: 'maia3-23m',
+    root: 'engines\\maia3\\hf-cache\\models--UofTCSSLab--Maia3-23M',
+    file: 'maia3-23m.pt'
+  },
+  '79m': {
+    alias: 'maia3-79m',
+    root: 'engines\\maia3\\hf-cache\\models--UofTCSSLab--Maia3-79M',
+    file: 'maia3-79m.pt'
+  }
+};
 const maiaSitePackages = 'engines\\maia3\\.conda\\Lib\\site-packages';
 const forbiddenMaiaPathPattern = /(downloads[\\/]+maia3-src|C:[\\/]+Users[\\/]+kevin|2026-05-30[\\/]+lichess)/i;
 
@@ -98,15 +109,29 @@ function validateMaiaPythonPackage(root) {
   return problems;
 }
 
-export function validateOfflinePayload(appRoot) {
+export function validateOfflinePayload(appRoot, { maiaModel = '23m' } = {}) {
   const root = resolve(appRoot);
+  const selectedModel = maiaModels[String(maiaModel).toLowerCase()];
+  if (!selectedModel) throw new Error(`Unsupported installer Maia model: ${maiaModel}`);
   const requiredFiles = requiredRelativeFiles.map((relativePath) => join(root, ...toParts(relativePath)));
   const missing = requiredFiles.filter((filePath) => !existsSync(filePath));
   const problems = [];
-  const modelRoot = join(root, ...toParts(maiaModelRoot));
-  const modelPath = findFile(modelRoot, maiaModelFile);
+  const modelRoot = join(root, ...toParts(selectedModel.root));
+  const modelPath = findFile(modelRoot, selectedModel.file);
   if (!modelPath) {
-    missing.push(join(modelRoot, '**', maiaModelFile));
+    missing.push(join(modelRoot, '**', selectedModel.file));
+  }
+  const defaultModelPath = join(root, 'engines', 'maia3', 'default-model.txt');
+  const configuredModel = readTextIfPresent(defaultModelPath).trim().toLowerCase();
+  if (configuredModel && configuredModel !== selectedModel.alias) {
+    problems.push(`Bundled Maia default ${configuredModel} does not match selected model ${selectedModel.alias}.`);
+  }
+  for (const [key, model] of Object.entries(maiaModels)) {
+    if (key === String(maiaModel).toLowerCase()) continue;
+    const unexpectedRoot = join(root, ...toParts(model.root));
+    if (findFile(unexpectedRoot, model.file)) {
+      problems.push(`Unexpected Maia model in ${selectedModel.alias} payload: ${unexpectedRoot}`);
+    }
   }
   problems.push(...validateMaiaPythonPackage(root));
 
@@ -123,7 +148,9 @@ export function validateOfflinePayload(appRoot) {
 function main() {
   const fallbackRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', 'installer', 'package', 'app');
   const appRoot = process.argv[2] ? resolve(process.argv[2]) : fallbackRoot;
-  const result = validateOfflinePayload(appRoot);
+  const modelFlag = process.argv.indexOf('--maia-model');
+  const maiaModel = modelFlag >= 0 ? process.argv[modelFlag + 1] : '23m';
+  const result = validateOfflinePayload(appRoot, { maiaModel });
 
   if (!result.ok) {
     console.error('Offline installer payload is incomplete.');
@@ -138,7 +165,7 @@ function main() {
   }
 
   console.log(`Offline installer payload OK: ${result.root}`);
-  console.log(`Maia3-23M model: ${result.modelPath}`);
+  console.log(`Maia3-${maiaModel.toUpperCase()} model: ${result.modelPath}`);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

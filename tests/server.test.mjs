@@ -129,6 +129,33 @@ test('engineKindForProfile routes Maia profiles and keeps 2700 on Stockfish', ()
   assert.equal(engineKindForProfile('human-2700'), 'stockfish');
 });
 
+test('resolveMaiaModel defaults to 23M and normalizes supported aliases', () => {
+  assert.equal(typeof server.resolveMaiaModel, 'function');
+  assert.equal(server.resolveMaiaModel({}), 'maia3-23m');
+  assert.equal(server.resolveMaiaModel({ MAIA3_MODEL: '23m' }), 'maia3-23m');
+  assert.equal(server.resolveMaiaModel({ MAIA3_MODEL: ' maia3-79m ' }), 'maia3-79m');
+  assert.equal(server.resolveMaiaModel({ MAIA3_MODEL: '79m' }), 'maia3-79m');
+  assert.equal(server.resolveMaiaModel({}, 'maia3-79m'), 'maia3-79m');
+});
+
+test('resolveMaiaModel rejects unsupported model names', () => {
+  assert.equal(typeof server.resolveMaiaModel, 'function');
+  assert.throws(
+    () => server.resolveMaiaModel({ MAIA3_MODEL: '69m' }),
+    /MAIA3_MODEL.*23m.*maia3-23m.*79m.*maia3-79m/
+  );
+});
+
+test('findMaiaExecutable validates the model before selecting a project wrapper', () => {
+  assert.throws(
+    () => findMaiaExecutable(
+      { MAIA3_MODEL: '69m' },
+      (candidate) => candidate.endsWith('engines\\maia3\\maia3-uci.cmd')
+    ),
+    /Invalid MAIA3_MODEL/
+  );
+});
+
 test('findMaiaExecutable adds model args for explicit MAIA3_PATH and local wrappers', () => {
   assert.deepEqual(findMaiaExecutable({ MAIA3_PATH: '/opt/maia3/bin/maia3-uci' }, () => false), {
     command: '/opt/maia3/bin/maia3-uci',
@@ -146,6 +173,30 @@ test('findMaiaExecutable adds model args for explicit MAIA3_PATH and local wrapp
   const found = findMaiaExecutable({}, (candidate) => candidate.endsWith('engines\\maia3\\maia3-uci.cmd'));
   assert.match(found.command, /engines\\maia3\\maia3-uci\.cmd$/);
   assert.deepEqual(found.args, []);
+});
+
+test('findMaiaExecutable forwards the selected 79M model to Maia launchers', () => {
+  const explicit = findMaiaExecutable({
+    MAIA3_PATH: '/opt/maia3/bin/maia3-uci',
+    MAIA3_MODEL: '79m'
+  }, () => false);
+  assert.deepEqual(explicit.args.slice(0, 2), ['--model', 'maia3-79m']);
+
+  const bundled = findMaiaExecutable(
+    { MAIA3_MODEL: 'maia3-79m' },
+    (candidate) => candidate.endsWith('engines\\maia3\\.conda\\python.exe')
+  );
+  assert.deepEqual(bundled.args.slice(0, 4), ['-m', 'maia3.uci', '--model', 'maia3-79m']);
+
+  const pipLauncher = findMaiaExecutable(
+    { MAIA3_MODEL: '79m' },
+    (candidate) => candidate.endsWith('engines\\maia3\\.conda\\Scripts\\maia3-uci.exe')
+  );
+  assert.deepEqual(pipLauncher.args.slice(0, 2), ['--model', 'maia3-79m']);
+
+  const pathFallback = findMaiaExecutable({ MAIA3_MODEL: '79m' }, () => false);
+  assert.equal(pathFallback.command, 'maia3-uci');
+  assert.deepEqual(pathFallback.args.slice(0, 2), ['--model', 'maia3-79m']);
 });
 
 test('findMaiaExecutable prefers bundled Python module execution over pip script launchers', () => {

@@ -113,16 +113,39 @@ export function findStockfishExecutable(env = process.env, exists = existsSync, 
   return found || 'stockfish';
 }
 
-function defaultMaiaArgs() {
-  return ['--model', 'maia3-23m', '--cache-dir', join(root, 'engines', 'maia3', 'hf-cache'), '--local-files-only', '--device', 'cpu', '--no-use-amp'];
+const maiaModelAliases = new Map([
+  ['23m', 'maia3-23m'],
+  ['maia3-23m', 'maia3-23m'],
+  ['79m', 'maia3-79m'],
+  ['maia3-79m', 'maia3-79m']
+]);
+
+function bundledMaiaModel() {
+  const modelFile = join(root, 'engines', 'maia3', 'default-model.txt');
+  if (!existsSync(modelFile)) return 'maia3-23m';
+  return readFileSync(modelFile, 'utf8').trim() || 'maia3-23m';
 }
 
-function maiaPythonModuleArgs() {
-  return ['-m', 'maia3.uci', ...defaultMaiaArgs()];
+export function resolveMaiaModel(env = process.env, defaultModel = bundledMaiaModel()) {
+  const requested = String(env.MAIA3_MODEL || defaultModel).trim().toLowerCase() || 'maia3-23m';
+  const model = maiaModelAliases.get(requested);
+  if (!model) {
+    throw new Error(`Invalid MAIA3_MODEL "${requested}". Use 23m, maia3-23m, 79m, or maia3-79m.`);
+  }
+  return model;
+}
+
+function defaultMaiaArgs(env = process.env) {
+  return ['--model', resolveMaiaModel(env), '--cache-dir', join(root, 'engines', 'maia3', 'hf-cache'), '--local-files-only', '--device', 'cpu', '--no-use-amp'];
+}
+
+function maiaPythonModuleArgs(env = process.env) {
+  return ['-m', 'maia3.uci', ...defaultMaiaArgs(env)];
 }
 
 export function findMaiaExecutable(env = process.env, exists = existsSync) {
-  if (env.MAIA3_PATH) return { command: env.MAIA3_PATH, args: defaultMaiaArgs() };
+  resolveMaiaModel(env);
+  if (env.MAIA3_PATH) return { command: env.MAIA3_PATH, args: defaultMaiaArgs(env) };
 
   const pythonRuntimes = [
     join(root, 'engines', 'maia3', '.conda', 'python.exe'),
@@ -134,7 +157,7 @@ export function findMaiaExecutable(env = process.env, exists = existsSync) {
   if (python) {
     return {
       command: python,
-      args: maiaPythonModuleArgs()
+      args: maiaPythonModuleArgs(env)
     };
   }
 
@@ -152,10 +175,10 @@ export function findMaiaExecutable(env = process.env, exists = existsSync) {
     const needsModelArgs = found.includes(`${join('engines', 'maia3', '.venv')}`) || found.includes(`${join('engines', 'maia3', '.conda')}`);
     return {
       command: found,
-      args: needsModelArgs ? defaultMaiaArgs() : []
+      args: needsModelArgs ? defaultMaiaArgs(env) : []
     };
   }
-  return { command: 'maia3-uci', args: defaultMaiaArgs() };
+  return { command: 'maia3-uci', args: defaultMaiaArgs(env) };
 }
 
 export function engineKindForProfile(profileId) {

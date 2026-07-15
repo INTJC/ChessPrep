@@ -121,7 +121,9 @@ test('installer fallback documentation describes full offline Maia install', () 
 
   assert.match(readme, /Full Offline Windows Installer/);
   assert.match(readme, /%LOCALAPPDATA%\\ChessPrep Lab/);
-  assert.match(readme, /Includes Maia-3 23M/);
+  assert.match(readme, /ChessPrep-Lab-Setup\.exe \(Maia-3 23M\)/);
+  assert.match(readme, /ChessPrep-Lab-Maia3-79M-Setup\.exe/);
+  assert.match(readme, /79M installer defaults to 79M/);
   assert.doesNotMatch(readme, /Maia-3 is not included/i);
   assert.doesNotMatch(readme, /LichessOpeningTrainer/);
 });
@@ -139,6 +141,10 @@ test('release installer build uses a separate hardened payload without developme
   assert.match(build, /\[System\.IO\.File\]::ReadAllText/);
   assert.match(build, /\[System\.IO\.File\]::WriteAllText/);
   assert.match(build, /Remove-DevelopmentArtifacts/);
+  assert.match(build, /param\([\s\S]*ValidateSet\('23m', '79m'\)[\s\S]*\$MaiaModel/);
+  assert.match(build, /Set-MaiaReleaseModel/);
+  assert.match(build, /default-model\.txt/);
+  assert.match(build, /ChessPrep-Lab-Maia3-79M-Setup/);
   assert.match(build, /data\\endgame-expansion/);
   assert.match(build, /assets\\icons\\icon-preview\.html/);
   assert.match(build, /opening-priors\.json/);
@@ -150,7 +156,7 @@ test('release installer build uses a separate hardened payload without developme
   assert.doesNotMatch(build, /downloads\\maia3-src/);
 
   assert.match(inno, /OutputDir=\.\.\\\.\.\\dist\\installer-release/);
-  assert.match(inno, /OutputBaseFilename=ChessPrep-Lab-Release-Setup/);
+  assert.match(inno, /OutputBaseFilename=\{#OutputBaseFilename\}/);
   assert.match(inno, /Source: "\.\.\\package-release\\app\\\*"/);
   assert.match(inno, /PrivilegesRequired=lowest/);
   assert.match(inno, /DisableReadyPage=yes/);
@@ -193,12 +199,13 @@ test('offline payload validator rejects editable Maia installs tied to the build
       'runtime\\node\\node.exe',
       'engines\\stockfish.exe',
       'engines\\maia3\\maia3-uci.cmd',
+      'engines\\maia3\\default-model.txt',
       'engines\\maia3\\.conda\\python.exe',
       'engines\\maia3\\.conda\\Lib\\site-packages\\maia3\\__init__.py',
       'engines\\maia3\\.conda\\Lib\\site-packages\\maia3\\uci.py',
       'engines\\maia3\\hf-cache\\models--UofTCSSLab--Maia3-23M\\snapshots\\test\\maia3-23m.pt'
     ]) {
-      writeFixtureFile(appRoot, relativePath);
+      writeFixtureFile(appRoot, relativePath, relativePath.endsWith('default-model.txt') ? 'maia3-23m\n' : '');
     }
 
     writeFixtureFile(
@@ -228,11 +235,67 @@ test('offline payload validator rejects editable Maia installs tied to the build
   }
 });
 
+test('offline payload validator accepts a 79M-only payload when selected', async () => {
+  const { validateOfflinePayload } = await import('../tools/installer/validate-offline-payload.mjs');
+  const appRoot = mkdtempSync(join(tmpdir(), 'chessprep-payload-'));
+  try {
+    for (const relativePath of [
+      'index.html',
+      'app.js',
+      'styles.css',
+      'i18n.js',
+      'server.mjs',
+      'start-trainer.ps1',
+      'runtime\\node\\node.exe',
+      'engines\\stockfish.exe',
+      'engines\\maia3\\maia3-uci.cmd',
+      'engines\\maia3\\default-model.txt',
+      'engines\\maia3\\.conda\\python.exe',
+      'engines\\maia3\\.conda\\Lib\\site-packages\\maia3\\__init__.py',
+      'engines\\maia3\\.conda\\Lib\\site-packages\\maia3\\uci.py',
+      'engines\\maia3\\hf-cache\\models--UofTCSSLab--Maia3-23M\\snapshots\\test\\maia3-23m.pt',
+      'engines\\maia3\\hf-cache\\models--UofTCSSLab--Maia3-79M\\snapshots\\test\\maia3-79m.pt'
+    ]) {
+      writeFixtureFile(appRoot, relativePath, relativePath.endsWith('default-model.txt') ? 'maia3-79m\n' : '');
+    }
+
+    rmSync(join(appRoot, 'engines', 'maia3', 'hf-cache', 'models--UofTCSSLab--Maia3-23M'), { recursive: true, force: true });
+
+    const result = validateOfflinePayload(appRoot, { maiaModel: '79m' });
+
+    assert.equal(result.ok, true);
+    assert.equal(result.missing.length, 0);
+    assert.equal(result.problems.length, 0);
+    assert.match(result.modelPath, /maia3-79m\.pt$/);
+  } finally {
+    rmSync(appRoot, { recursive: true, force: true });
+  }
+});
+
 test('Maia wrapper uses relocatable bundled Python module execution', () => {
   const wrapper = readProjectFile('engines', 'maia3', 'maia3-uci.cmd');
 
   assert.match(wrapper, /"%ROOT%\\.conda\\python\.exe" -m maia3\.uci/);
   assert.doesNotMatch(wrapper, /Scripts\\maia3-uci\.exe/i);
+});
+
+test('Maia wrapper honors MAIA3_MODEL while preserving the 23M default', () => {
+  const wrapper = readProjectFile('engines', 'maia3', 'maia3-uci.cmd');
+
+  assert.match(wrapper, /default-model\.txt/i);
+  assert.match(wrapper, /if not defined MAIA3_MODEL set "MAIA3_MODEL=maia3-23m"/i);
+  assert.match(wrapper, /--model "%MAIA3_MODEL%"/i);
+  assert.doesNotMatch(wrapper, /--model maia3-23m/i);
+  assert.equal(readProjectFile('engines', 'maia3', 'default-model.txt').trim(), 'maia3-23m');
+});
+
+test('Maia cache scripts expose explicit 23M and 79M downloads', () => {
+  assert.equal(projectFileExists('engines', 'maia3', 'cache-maia3-79m.cmd'), true);
+
+  const cache23m = readProjectFile('engines', 'maia3', 'cache-maia3-23m.cmd');
+  const cache79m = readProjectFile('engines', 'maia3', 'cache-maia3-79m.cmd');
+  assert.match(cache23m, /--model maia3-23m/i);
+  assert.match(cache79m, /--model maia3-79m/i);
 });
 
 test('HTML exposes opening and endgame training panes', () => {

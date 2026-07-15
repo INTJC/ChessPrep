@@ -2,6 +2,9 @@
 #define AppVersion "1.0.0"
 #define AppPublisher "ChessPrep Lab"
 #define AppExeName "start-trainer.ps1"
+#ifndef OutputBaseFilename
+  #define OutputBaseFilename "ChessPrep-Lab-Setup"
+#endif
 
 [Setup]
 AppId={{9B12E11D-2D9D-4F28-9093-70C3E56E7C44}
@@ -13,7 +16,7 @@ DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
 DisableReadyPage=yes
 OutputDir=..\..\dist\installer-release
-OutputBaseFilename=ChessPrep-Lab-Release-Setup
+OutputBaseFilename={#OutputBaseFilename}
 Compression=lzma2/ultra64
 SolidCompression=yes
 SetupIconFile=..\package-release\app\assets\icons\chessprep-lab.ico

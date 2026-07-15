@@ -1,3 +1,8 @@
+param(
+  [ValidateSet('23m', '79m')]
+  [string]$MaiaModel = '23m'
+)
+
 $ErrorActionPreference = 'Stop'
 
 $InstallerRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -7,7 +12,8 @@ $PayloadRoot = Join-Path $InstallerRoot 'package-release\app'
 $Validator = Join-Path $ProjectRoot 'tools\installer\validate-offline-payload.mjs'
 $InnoScript = Join-Path $InstallerRoot 'inno\ChessPrepLabRelease.iss'
 $OutputDir = Join-Path $ProjectRoot 'dist\installer-release'
-$OutputExe = Join-Path $OutputDir 'ChessPrep-Lab-Release-Setup.exe'
+$OutputBaseFilename = if ($MaiaModel -eq '79m') { 'ChessPrep-Lab-Maia3-79M-Setup' } else { 'ChessPrep-Lab-Setup' }
+$OutputExe = Join-Path $OutputDir "$OutputBaseFilename.exe"
 $Utf8NoBom = [System.Text.Encoding]::UTF8
 
 $ReleaseItems = @(
@@ -186,6 +192,33 @@ function Remove-DevelopmentArtifacts {
   }
 }
 
+function Set-MaiaReleaseModel {
+  $modelAliases = @{
+    '23m' = 'maia3-23m'
+    '79m' = 'maia3-79m'
+  }
+  $modelFolders = @{
+    '23m' = 'models--UofTCSSLab--Maia3-23M'
+    '79m' = 'models--UofTCSSLab--Maia3-79M'
+  }
+  $maiaRoot = Join-Path $PayloadRoot 'engines\maia3'
+  $cacheRoot = Join-Path $maiaRoot 'hf-cache'
+
+  foreach ($key in $modelFolders.Keys) {
+    if ($key -eq $MaiaModel) { continue }
+    $unselectedModel = Join-Path $cacheRoot $modelFolders[$key]
+    if (Test-Path $unselectedModel) {
+      Remove-Item -LiteralPath $unselectedModel -Recurse -Force
+    }
+  }
+
+  [System.IO.File]::WriteAllText(
+    (Join-Path $maiaRoot 'default-model.txt'),
+    "$($modelAliases[$MaiaModel])`n",
+    $Utf8NoBom
+  )
+}
+
 function Harden-ReleasePayload {
   foreach ($file in @('app.js', 'i18n.js', 'endgames.js', 'endgame-expansion-lessons.js', 'engine-profiles.mjs', 'server.mjs')) {
     Compress-JavaScript -Path (Join-Path $PayloadRoot $file)
@@ -193,6 +226,7 @@ function Harden-ReleasePayload {
   Compress-Css -Path (Join-Path $PayloadRoot 'styles.css')
   Compress-Html -Path (Join-Path $PayloadRoot 'index.html')
   Remove-DevelopmentArtifacts
+  Set-MaiaReleaseModel
 }
 
 if (-not (Test-Path $Validator)) {
@@ -206,7 +240,7 @@ if (-not (Test-Path $InnoScript)) {
 Copy-ReleasePayload
 Harden-ReleasePayload
 
-& node $Validator $PayloadRoot
+& node $Validator $PayloadRoot --maia-model $MaiaModel
 if ($LASTEXITCODE -ne 0) {
   throw "Release payload validation failed."
 }
@@ -217,7 +251,7 @@ if (-not $iscc) {
 }
 
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
-& $iscc $InnoScript
+& $iscc "/DOutputBaseFilename=$OutputBaseFilename" $InnoScript
 if ($LASTEXITCODE -ne 0) {
   throw "Inno Setup compile failed with exit code: $LASTEXITCODE"
 }

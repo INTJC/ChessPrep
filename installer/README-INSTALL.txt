@@ -1,7 +1,7 @@
 ChessPrep Lab - Full Offline Windows Installer
 
 Recommended install:
-1. Double-click dist\installer\ChessPrep-Lab-Setup.exe.
+1. Choose ChessPrep-Lab-Setup.exe (Maia-3 23M) or ChessPrep-Lab-Maia3-79M-Setup.exe.
 2. Keep the default no-admin install path.
 3. Let the setup wizard finish, then launch ChessPrep Lab.
 
@@ -15,7 +15,8 @@ What the installer does:
 - Creates a desktop shortcut named "ChessPrep Lab"
 - Uses the bundled Node.js runtime
 - Includes Stockfish for engine training
-- Includes Maia-3 23M with its bundled Python runtime and local model cache
+- Includes one Maia-3 model with its bundled Python runtime and local cache
+- The standard installer defaults to 23M; the 79M installer defaults to 79M
 
 After installation:
 - Double-click the desktop shortcut to open the trainer in your browser.
