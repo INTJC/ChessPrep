@@ -54,6 +54,23 @@ function writeFixtureFile(rootDir, relativePath, content = '') {
   return filePath;
 }
 
+test('repository and application expose AGPL licensing and third-party notices', () => {
+  const license = readProjectFile('LICENSE');
+  const notices = readProjectFile('THIRD_PARTY_NOTICES.md');
+  const html = readProjectFile('index.html');
+
+  assert.match(license, /GNU AFFERO GENERAL PUBLIC LICENSE/);
+  assert.match(license, /Version 3, 19 November 2007/);
+  assert.match(notices, /Maia-3/i);
+  assert.match(notices, /GNU Affero General Public License/i);
+  assert.match(notices, /Stockfish/i);
+  assert.match(notices, /GNU General Public License/i);
+  assert.match(notices, /UofTCSSLab\/Maia3-79M/);
+  assert.match(html, /href="LICENSE"/);
+  assert.match(html, /href="THIRD_PARTY_NOTICES\.md"/);
+  assert.match(html, /github\.com\/zhukaizhen\/ChessPrep/);
+});
+
 test('start script prefers bundled Node runtime before system Node', () => {
   const script = readProjectFile('start-trainer.ps1');
 
@@ -153,6 +170,9 @@ test('release installer build uses a separate hardened payload without developme
   assert.match(build, /ChessPrepLabRelease\.iss/);
   assert.match(build, /\$FallbackPayloadRoot = Join-Path \$InstallerRoot 'package\\app'/);
   assert.match(build, /Copy-ReleaseItem/);
+  assert.match(build, /'LICENSE'/);
+  assert.match(build, /'THIRD_PARTY_NOTICES\.md'/);
+  assert.match(build, /Is-LegalDocument/);
   assert.doesNotMatch(build, /downloads\\maia3-src/);
 
   assert.match(inno, /OutputDir=\.\.\\\.\.\\dist\\installer-release/);
@@ -160,6 +180,7 @@ test('release installer build uses a separate hardened payload without developme
   assert.match(inno, /Source: "\.\.\\package-release\\app\\\*"/);
   assert.match(inno, /PrivilegesRequired=lowest/);
   assert.match(inno, /DisableReadyPage=yes/);
+  assert.match(inno, /LicenseFile=\.\.\\package-release\\app\\LICENSE/);
 });
 
 test('installer package includes full offline engine payload', {
@@ -190,6 +211,8 @@ test('offline payload validator rejects editable Maia installs tied to the build
   const appRoot = mkdtempSync(join(tmpdir(), 'chessprep-payload-'));
   try {
     for (const relativePath of [
+      'LICENSE',
+      'THIRD_PARTY_NOTICES.md',
       'index.html',
       'app.js',
       'styles.css',
@@ -240,6 +263,8 @@ test('offline payload validator accepts a 79M-only payload when selected', async
   const appRoot = mkdtempSync(join(tmpdir(), 'chessprep-payload-'));
   try {
     for (const relativePath of [
+      'LICENSE',
+      'THIRD_PARTY_NOTICES.md',
       'index.html',
       'app.js',
       'styles.css',

@@ -801,7 +801,9 @@ async function serveStatic(pathname, response) {
   try {
     const content = await readFile(filePath);
     response.writeHead(200, {
-      'Content-Type': types[extname(filePath)] || 'application/octet-stream'
+      'Content-Type': filePath.endsWith('LICENSE')
+        ? 'text/plain; charset=utf-8'
+        : types[extname(filePath)] || 'application/octet-stream'
     });
     response.end(content);
   } catch {

@@ -1,5 +1,12 @@
 ChessPrep Lab - Full Offline Windows Installer
 
+License and source:
+- ChessPrep Lab is licensed under GNU AGPL v3.0.
+- Every installer must include LICENSE and THIRD_PARTY_NOTICES.md.
+- Recipients must be given access to the matching corresponding source.
+- Stockfish and Maia-3 remain under their respective copyleft licenses.
+- Confirm the Maia-3 model publisher's terms before redistributing model weights.
+
 Recommended install:
 1. Choose ChessPrep-Lab-Setup.exe (Maia-3 23M) or ChessPrep-Lab-Maia3-79M-Setup.exe.
 2. Keep the default no-admin install path.

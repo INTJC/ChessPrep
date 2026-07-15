@@ -99,6 +99,14 @@ node server.mjs
 
 运行时使用本地缓存，不会临时联网下载模型。Windows Release 同时提供 23M 标准版和 79M 高精度版；每个安装包只捆绑一个 Maia 模型，安装后自动使用对应模型。
 
+### 许可与源码
+
+ChessPrep Lab 按 [GNU AGPL v3.0](LICENSE) 发布。你可以运行、研究和修改代码，也可以在遵守许可证的前提下再发布；如果修改版通过网络向用户提供服务，必须让这些用户能够免费取得对应版本的完整源码。软件按“原样”提供，不附带任何担保。
+
+这意味着 AGPL 能阻止他人把修改版直接变成不公开源码的网络产品，但**不能禁止别人使用、复制或在同一许可证下再发布**。若需要“未经授权不得使用”的效果，应采用专有商业许可证；这会与当前 Maia-3/Stockfish 组合的开源发布方式产生冲突。
+
+仓库目前保持私有。向他人分发安装包或开放网络访问时，还应向同一批用户提供本仓库对应提交的源码访问或源码压缩包。第三方组件及模型权重的状态见 [第三方声明](THIRD_PARTY_NOTICES.md)。特别注意：截至 `2026-07-15`，Maia-3 23M/79M 模型仓库元数据未声明权重许可证，重新分发含权重的安装包前应向模型发布者确认授权。
+
 ## <a id="en"></a>English Overview
 
 ChessPrep Lab is a local chess preparation workspace that brings Lichess Study imports, opening recall, opponent preparation, practical endgame courses, and engine sparring into one browser-based app. By default it listens only on `127.0.0.1`; it does not require a Lichess token and does not store login credentials.
@@ -162,6 +170,22 @@ For private studies, export PGN from Lichess and paste or upload it locally. Pub
 See the [offline prep database and Maia-3 guide](docs/offline-prep-and-maia3.md) for public PGN acquisition, full and incremental database builds, prep reports, source installation, model caching, and troubleshooting.
 
 Maia uses 23M by default. After a source install and 79M cache download, start with `MAIA3_MODEL=maia3-79m`. Runtime model loading stays offline. Windows Releases provide separate 23M and 79M installers; each installer contains exactly one Maia model and selects it by default.
+
+### License And Source
+
+ChessPrep Lab is released under the [GNU AGPL v3.0](LICENSE). You may run,
+study, modify, and redistribute it subject to that license. A modified version
+used over a network must offer its users free access to the complete
+corresponding source. The software is provided without warranty.
+
+AGPL prevents a modified network version from being kept closed source; it
+does **not** prohibit use, copying, or compliant redistribution. The repository
+currently remains private, so anyone receiving a binary or using a network
+deployment must also receive access to the matching source commit or a source
+archive. See [Third-Party Notices](THIRD_PARTY_NOTICES.md). The Maia-3 23M and
+79M model repository metadata did not declare a weights license when checked on
+`2026-07-15`; confirm permission with the model publisher before
+redistributing installers that contain those weights.
 
 ## Repository Notes
 

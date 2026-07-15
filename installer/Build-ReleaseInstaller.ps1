@@ -17,6 +17,8 @@ $OutputExe = Join-Path $OutputDir "$OutputBaseFilename.exe"
 $Utf8NoBom = [System.Text.Encoding]::UTF8
 
 $ReleaseItems = @(
+  'LICENSE',
+  'THIRD_PARTY_NOTICES.md',
   'index.html',
   'app.js',
   'styles.css',
@@ -127,6 +129,16 @@ function Compress-Html {
   [System.IO.File]::WriteAllText($Path, $text.Trim(), $Utf8NoBom)
 }
 
+function Is-LegalDocument {
+  param([System.IO.FileInfo]$File)
+
+  if ($File.Name -eq 'THIRD_PARTY_NOTICES.md') {
+    return $true
+  }
+
+  return $File.FullName -match '[\\/](licenses?|legal)[\\/]'
+}
+
 function Remove-DevelopmentArtifacts {
   $blockedNames = @(
     'tests',
@@ -165,7 +177,10 @@ function Remove-DevelopmentArtifacts {
 
   $developmentExtensions = @('.map', '.ts', '.md', '.pdf', '.zip', '.pgn', '.log')
   $developmentFiles = Get-ChildItem -LiteralPath $PayloadRoot -Recurse -Force -File -ErrorAction SilentlyContinue |
-    Where-Object { $developmentExtensions -contains $_.Extension.ToLowerInvariant() }
+    Where-Object {
+      $developmentExtensions -contains $_.Extension.ToLowerInvariant() -and
+      -not (Is-LegalDocument -File $_)
+    }
   foreach ($file in $developmentFiles) {
     if (-not $file.PSIsContainer -and [System.IO.File]::Exists($file.FullName)) {
       [System.IO.File]::Delete($file.FullName)

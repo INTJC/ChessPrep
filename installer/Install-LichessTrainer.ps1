@@ -37,6 +37,8 @@ function Find-FileRecursive {
 function Assert-PackageFiles {
   $required = @(
     $SourceApp,
+    (Join-Path $SourceApp 'LICENSE'),
+    (Join-Path $SourceApp 'THIRD_PARTY_NOTICES.md'),
     (Join-Path $SourceApp 'server.mjs'),
     (Join-Path $SourceApp 'start-trainer.ps1'),
     (Join-Path $SourceApp 'runtime\node\node.exe'),

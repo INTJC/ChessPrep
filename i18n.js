@@ -125,7 +125,11 @@ const UI_TEXT = {
     'promotion.b': '象',
     'promotion.n': '马',
     'lang.zh': '中文',
-    'lang.en': 'English'
+    'lang.en': 'English',
+    'legal.notice': '© 2026 ChessPrep Lab 贡献者 · 本软件不提供任何担保',
+    'legal.source': '对应源码',
+    'legal.license': 'AGPL-3.0 许可',
+    'legal.thirdParty': '第三方声明'
   },
   en: {
     'app.title': 'ChessPrep Lab',
@@ -249,7 +253,11 @@ const UI_TEXT = {
     'promotion.b': 'Bishop',
     'promotion.n': 'Knight',
     'lang.zh': '中文',
-    'lang.en': 'English'
+    'lang.en': 'English',
+    'legal.notice': '© 2026 ChessPrep Lab contributors · No warranty',
+    'legal.source': 'Corresponding Source',
+    'legal.license': 'AGPL-3.0 License',
+    'legal.thirdParty': 'Third-Party Notices'
   }
 };
 

@@ -1683,3 +1683,26 @@ body.locale-en .brand-lockup {
     font-size: clamp(24px, 10vw, 44px);
   }
 }
+
+.legal-footer {
+  align-items: center;
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  gap: 6px 16px;
+  justify-content: center;
+  margin: 0 auto;
+  max-width: 1500px;
+  padding: 4px 16px 18px;
+}
+
+.legal-footer a {
+  color: var(--accent-gold);
+  text-decoration: none;
+}
+
+.legal-footer a:hover,
+.legal-footer a:focus-visible {
+  text-decoration: underline;
+}

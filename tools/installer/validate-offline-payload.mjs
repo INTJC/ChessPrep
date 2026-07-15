@@ -3,6 +3,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const requiredRelativeFiles = [
+  'LICENSE',
+  'THIRD_PARTY_NOTICES.md',
   'index.html',
   'app.js',
   'styles.css',

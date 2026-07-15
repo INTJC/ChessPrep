@@ -22,6 +22,7 @@ PrivilegesRequired=lowest
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 WizardStyle=modern
+LicenseFile=..\package\app\LICENSE
 WizardSmallImageFile=..\package\app\assets\icons\chessprep-lab-mark-64.png
 
 [Languages]
