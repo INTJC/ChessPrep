@@ -92,3 +92,17 @@ scripts/build-macos-zip.sh
 ```text
 dist/macos/ChessPrep-Lab-macOS-1.0.0.zip
 ```
+
+## 7. 在 GitHub 云端构建并下载
+
+如果不想在本地运行任何命令，可以直接在你 fork 的仓库中使用 GitHub Actions：
+
+1. 进入你的 fork 仓库。
+2. 打开 `Actions` 标签页。
+3. 选择 `Build macOS package` 工作流。
+4. 点击 `Run workflow`。
+5. 保持默认 `version`，或填写你想要的版本号。
+6. 如需自动生成 Release 下载页，勾选 `publish_release`。
+7. 运行完成后，在该次 workflow run 的 `Artifacts` 区域下载 `ChessPrep-Lab-macOS-<version>.zip`。
+
+如果勾选 `publish_release`，工作流还会创建或更新 `macos-<version>` Release，并把同一个 ZIP 作为 Release 附件上传，方便直接从 GitHub Releases 下载。

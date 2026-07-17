@@ -76,6 +76,8 @@ chmod +x start-macos.sh
 scripts/build-macos-zip.sh
 ```
 
+不想在本地运行命令时，可以在 fork 仓库的 GitHub Actions 中手动运行 `Build macOS package`，完成后从 workflow artifacts 或可选 Release 附件下载 ZIP。
+
 详细说明见 [macOS 本地部署指南](README-macOS.md)。
 
 ### 数据规模
