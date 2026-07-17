@@ -59,7 +59,7 @@ test('engine endpoint applies per-client rate limiting', () => {
   assert.match(source, /429/);
 });
 
-test('offline prep endpoints import compact PGN stores and build reports', () => {
+test('prep report endpoint accepts uploaded opponent PGN and builds reports', () => {
   const source = readFileSync(join(root, 'server.mjs'), 'utf8');
   assert.match(source, /\/prep-database-status/);
   assert.match(source, /\/prep-database-build/);
@@ -67,9 +67,10 @@ test('offline prep endpoints import compact PGN stores and build reports', () =>
   assert.doesNotMatch(source, /\/offline-pgn-import/);
   assert.match(source, /getOfflineDatabaseStatus/);
   assert.match(source, /buildOfflineDatabase/);
-  assert.match(source, /loadOrBuildOpponentOpeningTree/);
+  assert.match(source, /buildUploadedOpponentOpeningTreeArtifact/);
   assert.match(source, /buildPrepReport/);
   assert.match(source, /opponentTree:\s*openingTree\.artifact/);
+  assert.match(source, /opponentPgn/);
   assert.match(source, /openingTree:\s*\{/);
 });
 
@@ -85,8 +86,8 @@ test('findStockfishExecutable prefers explicit STOCKFISH_PATH', () => {
 });
 
 test('findStockfishExecutable scans local engine folders before PATH names', () => {
-  const found = findStockfishExecutable({}, (candidate) => candidate.endsWith('engines\\stockfish.exe'));
-  assert.match(found, /engines\\stockfish\.exe$/);
+  const found = findStockfishExecutable({}, (candidate) => candidate.endsWith('stockfish.exe'), 'win32');
+  assert.match(found, /engines[\\/]stockfish\.exe$/);
 });
 
 test('findStockfishExecutable skips Windows binaries on macOS and Linux', () => {
@@ -162,16 +163,16 @@ test('findMaiaExecutable adds model args for explicit MAIA3_PATH and local wrapp
     args: defaultMaiaArgs
   });
 
-  const conda = findMaiaExecutable({}, (candidate) => candidate.endsWith('engines\\maia3\\.conda\\Scripts\\maia3-uci.exe'));
-  assert.match(conda.command, /engines\\maia3\\.conda\\Scripts\\maia3-uci\.exe$/);
+  const conda = findMaiaExecutable({}, (candidate) => candidate.endsWith(`${join('engines', 'maia3', '.conda', 'Scripts', 'maia3-uci.exe')}`));
+  assert.match(conda.command, /engines[\\/]maia3[\\/]\.conda[\\/]Scripts[\\/]maia3-uci\.exe$/);
   assert.deepEqual(conda.args, defaultMaiaArgs);
 
-  const venv = findMaiaExecutable({}, (candidate) => candidate.endsWith('engines\\maia3\\.venv\\Scripts\\maia3-uci.exe'));
-  assert.match(venv.command, /engines\\maia3\\.venv\\Scripts\\maia3-uci\.exe$/);
+  const venv = findMaiaExecutable({}, (candidate) => candidate.endsWith(`${join('engines', 'maia3', '.venv', 'Scripts', 'maia3-uci.exe')}`));
+  assert.match(venv.command, /engines[\\/]maia3[\\/]\.venv[\\/]Scripts[\\/]maia3-uci\.exe$/);
   assert.deepEqual(venv.args, defaultMaiaArgs);
 
-  const found = findMaiaExecutable({}, (candidate) => candidate.endsWith('engines\\maia3\\maia3-uci.cmd'));
-  assert.match(found.command, /engines\\maia3\\maia3-uci\.cmd$/);
+  const found = findMaiaExecutable({}, (candidate) => candidate.endsWith(`${join('engines', 'maia3', 'maia3-uci.cmd')}`));
+  assert.match(found.command, /engines[\\/]maia3[\\/]maia3-uci\.cmd$/);
   assert.deepEqual(found.args, []);
 });
 
@@ -184,13 +185,13 @@ test('findMaiaExecutable forwards the selected 79M model to Maia launchers', () 
 
   const bundled = findMaiaExecutable(
     { MAIA3_MODEL: 'maia3-79m' },
-    (candidate) => candidate.endsWith('engines\\maia3\\.conda\\python.exe')
+    (candidate) => candidate.endsWith(`${join('engines', 'maia3', '.conda', 'python.exe')}`)
   );
   assert.deepEqual(bundled.args.slice(0, 4), ['-m', 'maia3.uci', '--model', 'maia3-79m']);
 
   const pipLauncher = findMaiaExecutable(
     { MAIA3_MODEL: '79m' },
-    (candidate) => candidate.endsWith('engines\\maia3\\.conda\\Scripts\\maia3-uci.exe')
+    (candidate) => candidate.endsWith(`${join('engines', 'maia3', '.conda', 'Scripts', 'maia3-uci.exe')}`)
   );
   assert.deepEqual(pipLauncher.args.slice(0, 2), ['--model', 'maia3-79m']);
 
@@ -201,12 +202,12 @@ test('findMaiaExecutable forwards the selected 79M model to Maia launchers', () 
 
 test('findMaiaExecutable prefers bundled Python module execution over pip script launchers', () => {
   const found = findMaiaExecutable({}, (candidate) => (
-    candidate.endsWith('engines\\maia3\\.conda\\python.exe')
-      || candidate.endsWith('engines\\maia3\\maia3-uci.cmd')
-      || candidate.endsWith('engines\\maia3\\.conda\\Scripts\\maia3-uci.exe')
+    candidate.endsWith(`${join('engines', 'maia3', '.conda', 'python.exe')}`)
+      || candidate.endsWith(`${join('engines', 'maia3', 'maia3-uci.cmd')}`)
+      || candidate.endsWith(`${join('engines', 'maia3', '.conda', 'Scripts', 'maia3-uci.exe')}`)
   ));
 
-  assert.match(found.command, /engines\\maia3\\.conda\\python\.exe$/);
+  assert.match(found.command, /engines[\\/]maia3[\\/]\.conda[\\/]python\.exe$/);
   assert.deepEqual(found.args.slice(0, 3), ['-m', 'maia3.uci', '--model']);
   assert.ok(found.args.includes('--local-files-only'));
 });
