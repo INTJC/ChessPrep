@@ -68,6 +68,19 @@ export function pieceAssetClass(piece) {
   return `piece-${color}${piece.toUpperCase()}`;
 }
 
+
+export function boardDisplayRanks(orientation = 'w') {
+  return orientation === 'b' ? [1, 2, 3, 4, 5, 6, 7, 8] : [8, 7, 6, 5, 4, 3, 2, 1];
+}
+
+export function boardDisplayFiles(orientation = 'w') {
+  return orientation === 'b' ? [...FILES].reverse() : [...FILES];
+}
+
+export function normalizeBoardOrientation(side = 'w') {
+  return side === 'b' ? 'b' : 'w';
+}
+
 export function boardSquareColor(square) {
   const file = FILES.indexOf(square[0]);
   const rank = Number(square[1]);
@@ -118,6 +131,7 @@ const state = {
   mode: 'opening',
   trainer: null,
   side: 'w',
+  openingSide: 'w',
   currentFen: normalizeFen(START_FEN),
   currentState: parseFen(START_FEN),
   selected: null,
@@ -1454,7 +1468,8 @@ if (browserReady()) {
     });
     refs.sideButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        state.side = button.dataset.side;
+        state.openingSide = normalizeBoardOrientation(button.dataset.side);
+        state.side = state.openingSide;
         state.completedTerminals = new Set();
         state.lastCompletedPgn = '';
         startTraining();
@@ -1547,7 +1562,7 @@ if (browserReady()) {
       state.opponentChoices = [];
       setPrepBranchStatus('备战模式：先在棋盘上选到具体开局分支，再生成报告。');
     } else {
-      state.side = state.trainer ? state.side : 'w';
+      state.side = state.trainer ? state.openingSide : 'w';
       state.currentFen = state.trainer?.rootFen ?? normalizeFen(START_FEN);
       state.currentState = stateFromKeyFen(state.currentFen);
       state.lastMove = null;
@@ -2842,12 +2857,17 @@ if (browserReady()) {
     renderPromotionPicker();
   }
 
+  function currentBoardOrientation() {
+    return state.mode === 'opening' ? state.openingSide : normalizeBoardOrientation(state.side);
+  }
+
   function renderBoard() {
     if (!els.board) return;
     els.board.innerHTML = '';
     els.board.classList.toggle('is-wrong', state.wrongFlash);
-    const ranks = state.side === 'w' ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8];
-    const files = state.side === 'w' ? [...FILES] : [...FILES].reverse();
+    const orientation = currentBoardOrientation();
+    const ranks = boardDisplayRanks(orientation);
+    const files = boardDisplayFiles(orientation);
     const legalTargets = state.selected ? getLegalDestinationSquares(state.currentFen, state.selected) : [];
     renderBoardLabels(ranks, files);
 
@@ -2945,7 +2965,7 @@ if (browserReady()) {
     renderSavedStudies();
 
     els.sideButtons.forEach((button) => {
-      button.classList.toggle('active', button.dataset.side === state.side);
+      button.classList.toggle('active', button.dataset.side === state.openingSide);
     });
 
     const accuracy = state.stats.attempts ? Math.round((state.stats.correct / state.stats.attempts) * 100) : 100;

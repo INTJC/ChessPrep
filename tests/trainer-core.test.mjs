@@ -5,6 +5,8 @@ import {
   chooseOpponentMove,
   buildStudyPgnUrls,
   boardInputReducer,
+  boardDisplayFiles,
+  boardDisplayRanks,
   boardSquareColor,
   chooseRandomCandidateMove,
   createStudyRecord,
@@ -38,6 +40,7 @@ import {
   appendStudyRecord,
   upsertStudyRecord,
   getCandidateMoves,
+  normalizeBoardOrientation,
   pieceAssetClass,
   splitPgnGames,
   tokenizePgnMovetext
@@ -176,6 +179,15 @@ test('boardSquareColor follows chessboard convention', () => {
   assert.equal(boardSquareColor('h1'), 'light');
   assert.equal(boardSquareColor('a8'), 'light');
   assert.equal(boardSquareColor('h8'), 'dark');
+});
+
+test('board display orientation flips ranks and files for black training side', () => {
+  assert.deepEqual(boardDisplayRanks('w'), [8, 7, 6, 5, 4, 3, 2, 1]);
+  assert.deepEqual(boardDisplayFiles('w'), ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']);
+  assert.deepEqual(boardDisplayRanks('b'), [1, 2, 3, 4, 5, 6, 7, 8]);
+  assert.deepEqual(boardDisplayFiles('b'), ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a']);
+  assert.equal(normalizeBoardOrientation('b'), 'b');
+  assert.equal(normalizeBoardOrientation('invalid'), 'w');
 });
 
 test('getLegalDestinationSquares returns legal targets for selected pieces', () => {
