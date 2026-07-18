@@ -1,85 +1,108 @@
-# ChessPrep Lab macOS Local Deployment
+# ChessPrep Lab macOS 本地版
 
-This package is for local macOS deployment. It contains the web app, the Node.js server, opening/endgame data, icons, and piece assets.
+这是面向 MacBook 的本地运行版本。应用包含网页界面、Node.js 本地服务器、开局/残局训练数据、图标和棋子资源。备战模式不再依赖大型离线数据库；请直接上传或粘贴对手 PGN 生成报告。
 
-## 1. Install Node.js
+## 1. 安装 Node.js
 
-If Node.js is not installed, install it with Homebrew:
+如果没有安装 Node.js，推荐使用 Homebrew：
 
 ```bash
 brew install node
 ```
 
-Check it:
+检查安装：
 
 ```bash
 node --version
 ```
 
-## 2. Start ChessPrep Lab
+## 2. 启动应用
 
-Open Terminal, enter the extracted folder, then run:
+解压从 GitHub 下载的 `ChessPrep-Lab-macOS-*.zip`，进入解压后的目录，然后运行：
 
 ```bash
 chmod +x start-macos.sh
 ./start-macos.sh
 ```
 
-The app will run at:
+浏览器会自动打开：
 
 ```text
 http://localhost:8788
 ```
 
-The server listens on `127.0.0.1` by default, so it is local-only.
+服务器默认只监听 `127.0.0.1`，仅本机可访问。
 
-## 3. Change Port If Needed
+## 3. 端口被占用
 
-If port `8788` is occupied:
+如果 `8788` 被占用：
 
 ```bash
 PORT=8790 ./start-macos.sh
 ```
 
-## 4. Stockfish on macOS
+## 4. 备战模式
 
-Opening training and endgame training work without a chess engine. Human-Like sparring and strong-engine mode need a local UCI engine.
+1. 在“开局训练”中导入你的准备 PGN。
+2. 切换到“备战模式”。
+3. 上传或粘贴对手 PGN。
+4. 可选填写对手姓名；留空时会分析上传文件中的全部对局。
+5. 选择我方执棋颜色并点击“生成备战报告”。
 
-Recommended:
+报告会保留原有分析维度：对手常见选择、未见准备、低样本分支、表现差分支和准备缺口。
+
+## 5. Stockfish 与 Maia-3
+
+开局训练、残局训练和上传 PGN 备战不需要棋类引擎。拟人对练和强引擎模式需要本地 UCI 引擎。
+
+推荐安装 Stockfish：
 
 ```bash
 brew install stockfish
 ```
 
-Then restart ChessPrep Lab. If Stockfish is installed somewhere else, set:
+如果 Stockfish 在其他位置：
 
 ```bash
 STOCKFISH_PATH="/path/to/stockfish" ./start-macos.sh
 ```
 
-You can also place a macOS Stockfish binary at:
+也可以把 macOS Stockfish 二进制放在：
 
 ```text
 engines/stockfish
 ```
 
-## 5. Maia-3 Profiles
-
-The `Human-Like 2200 / 2400 / 2600` labels are preserved, while the engine strength is calibrated 200 Elo higher internally with stricter Stockfish quality filtering. This zip does not include a macOS Maia environment. If Maia-3 is not installed, use `Stockfish Strong` or `Approx. 2700`.
-
-If you install Maia-3 locally, set:
+如果你已自行安装 Maia-3，可以设置：
 
 ```bash
 MAIA3_PATH="/path/to/maia3-uci" ./start-macos.sh
 ```
 
-The app also checks these local paths:
+## 6. 构建 macOS ZIP
 
-```text
-engines/maia3/.venv/bin/maia3-uci
-engines/maia3/.conda/bin/maia3-uci
+仓库维护者可以运行：
+
+```bash
+scripts/build-macos-zip.sh
 ```
 
-## 6. Public Lichess Study Import
+产物位于：
 
-Public Lichess Study import works through the local Node server. Private studies should be exported from Lichess as PGN, then pasted or uploaded.
+```text
+dist/macos/ChessPrep-Lab-macOS-1.0.0.zip
+```
+
+## 7. 在 GitHub 云端构建并下载
+
+如果不想在本地运行任何命令，可以直接在你 fork 的仓库中使用 GitHub Actions：
+
+1. 进入你的 fork 仓库。
+2. 打开 `Actions` 标签页。
+3. 选择 `Build macOS package` 工作流。
+4. 点击 `Run workflow`。
+5. 保持默认 `version`，或填写你想要的版本号。
+6. 如需自动生成 Release 下载页，勾选 `publish_release`。
+7. 运行完成后，在该次 workflow run 的 `Artifacts` 区域下载 `ChessPrep-Lab-macOS-<version>.zip`。
+
+如果勾选 `publish_release`，工作流还会创建或更新 `macos-<version>` Release，并把同一个 ZIP 作为 Release 附件上传，方便直接从 GitHub Releases 下载。

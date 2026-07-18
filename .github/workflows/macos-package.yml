@@ -1,0 +1,96 @@
+name: Build macOS package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: macOS package version used in the ZIP file name
+        required: true
+        default: 1.0.0
+      publish_release:
+        description: Also publish a GitHub Release with the generated ZIP
+        type: boolean
+        required: true
+        default: false
+  push:
+    branches:
+      - main
+      - work
+    paths:
+      - .github/workflows/macos-package.yml
+      - scripts/build-macos-zip.sh
+      - app.js
+      - index.html
+      - server.mjs
+      - styles.css
+      - endgames.js
+      - endgame-expansion-lessons.js
+      - engine-profiles.mjs
+      - i18n.js
+      - start-macos.sh
+      - assets/**
+      - data/player-prep/chinese-player-pinyin.json
+      - engines/README.md
+      - engines/maia3/default-model.txt
+      - engines/maia3/maia3-uci.cmd
+      - tools/player-prep/**
+      - tools/engine-calibration/**
+      - README.md
+      - README-macOS.md
+      - LICENSE
+      - THIRD_PARTY_NOTICES.md
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  package:
+    name: Build downloadable macOS ZIP
+    runs-on: macos-latest
+    env:
+      VERSION: ${{ github.event.inputs.version || '1.0.0' }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show Node.js version
+        run: node --version
+
+      - name: Validate JavaScript syntax
+        run: |
+          node --check app.js
+          node --check server.mjs
+
+      - name: Validate package script
+        run: bash -n scripts/build-macos-zip.sh
+
+      - name: Build macOS ZIP
+        run: scripts/build-macos-zip.sh
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChessPrep-Lab-macOS-${{ env.VERSION }}
+          path: dist/macos/ChessPrep-Lab-macOS-${{ env.VERSION }}.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish GitHub Release
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: macos-${{ env.VERSION }}
+          ZIP_PATH: dist/macos/ChessPrep-Lab-macOS-${{ env.VERSION }}.zip
+        run: |
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh release upload "${RELEASE_TAG}" "${ZIP_PATH}" --clobber
+          else
+            gh release create "${RELEASE_TAG}" "${ZIP_PATH}" \
+              --target "${GITHUB_SHA}" \
+              --title "ChessPrep Lab macOS ${VERSION}" \
+              --notes "MacBook 本地版：上传/粘贴对手 PGN 生成备战报告，不依赖大型离线数据库。"
+          fi

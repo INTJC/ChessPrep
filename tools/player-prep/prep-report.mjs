@@ -156,6 +156,7 @@ function hydrateGame(store, game) {
 
 function opponentMatches(store, game, opponent, side) {
   const target = normalizePlayerName(opponent);
+  if (!target) return true;
   const white = normalizePlayerName(stringValue(store, game.white));
   const black = normalizePlayerName(stringValue(store, game.black));
   return side === 'w' ? white === target : black === target;

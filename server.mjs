@@ -5,10 +5,10 @@ import { spawn } from 'node:child_process';
 import { extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getEngineProfile } from './engine-profiles.mjs';
-import { loadOfflineStore } from './tools/player-prep/offline-store.mjs';
 import { buildOfflineDatabase, getOfflineDatabaseStatus } from './tools/player-prep/database-builder.mjs';
-import { loadOrBuildOpponentOpeningTree, resetOpeningTreeCache } from './tools/player-prep/opening-tree.mjs';
+import { resetOpeningTreeCache } from './tools/player-prep/opening-tree.mjs';
 import { buildPrepReport } from './tools/player-prep/prep-report.mjs';
+import { buildUploadedOpponentOpeningTreeArtifact } from './tools/player-prep/uploaded-pgn-tree.mjs';
 
 const root = process.cwd();
 const engineTimeoutMs = 30000;
@@ -464,20 +464,31 @@ async function handlePrepReport(request, response) {
   }
 
   try {
-    const payload = JSON.parse(await readRequestBody(request));
+    const payload = JSON.parse(await readRequestBody(request, { maxBytes: 15 * 1024 * 1024 }));
     const opponent = String(payload?.opponent || '');
     const ourSide = payload?.ourSide === 'b' ? 'b' : 'w';
     const maxPly = clampNumber(payload?.maxPly, 2, 60, 40);
     const opponentSide = ourSide === 'w' ? 'b' : 'w';
+    const opponentPgn = String(payload?.opponentPgn || '').trim();
     let store = null;
     let openingTree = null;
 
-    try {
-      openingTree = loadOrBuildOpponentOpeningTree({ opponent, opponentSide, maxPly });
-    } catch (error) {
-      if (!/cache not found/i.test(error.message || '')) throw error;
-      store = loadOfflineStore();
-      openingTree = loadOrBuildOpponentOpeningTree({ store, opponent, opponentSide, maxPly });
+    if (opponentPgn) {
+      const uploaded = buildUploadedOpponentOpeningTreeArtifact(opponentPgn, {
+        opponent,
+        opponentSide,
+        maxPly,
+        sourceName: String(payload?.opponentPgnName || 'uploaded-opponent.pgn')
+      });
+      store = uploaded.store;
+      openingTree = {
+        fromCache: false,
+        path: null,
+        artifact: uploaded.artifact,
+        uploadSummary: uploaded.summary
+      };
+    } else {
+      throw Object.assign(new Error('请先上传或粘贴对手 PGN。'), { statusCode: 400 });
     }
 
     const report = buildPrepReport({
@@ -497,7 +508,9 @@ async function handlePrepReport(request, response) {
         fromCache: openingTree.fromCache,
         path: openingTree.path,
         nodes: openingTree.artifact.nodes.length,
-        sampleGames: openingTree.artifact.sampleGames
+        sampleGames: openingTree.artifact.sampleGames,
+        source: opponentPgn ? 'uploaded-pgn' : 'offline-database',
+        uploadSummary: openingTree.uploadSummary || null
       }
     };
     response.writeHead(200, {
