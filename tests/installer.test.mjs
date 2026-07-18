@@ -395,6 +395,16 @@ test('frontend prep mode uploads opponent PGN before reports', () => {
   assert.match(prepReport, /explorer:\s*makeOpponentExplorer\(opponentTree\)/);
 });
 
+
+
+test('browser app initializes even if module executes after DOMContentLoaded', () => {
+  const app = readProjectFile('app.js');
+  assert.match(app, /function initializeApp\(\)/);
+  assert.match(app, /if \(document\.readyState === 'loading'\)/);
+  assert.match(app, /document\.addEventListener\('DOMContentLoaded', initializeApp, \{ once: true \}\)/);
+  assert.match(app, /else \{\s*initializeApp\(\);\s*\}/);
+});
+
 test('top feedback is dynamic and not statically reset to the opening import prompt', () => {
   const html = readProjectFile('index.html');
   const app = readProjectFile('app.js');

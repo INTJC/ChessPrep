@@ -1372,14 +1372,24 @@ if (browserReady()) {
   let dragGhost = null;
   let dragGhostFrame = 0;
 
-  document.addEventListener('DOMContentLoaded', () => {
+  let appInitialized = false;
+
+  function initializeApp() {
+    if (appInitialized) return;
+    appInitialized = true;
     bindElements(els);
     state.locale = DEFAULT_LOCALE;
     applyStaticTranslations(document, currentLocale());
     state.savedStudies = loadSavedStudies();
     bindEvents(els);
     render();
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp, { once: true });
+  } else {
+    initializeApp();
+  }
 
   function bindElements(refs) {
     refs.board = document.querySelector('[data-board]');
