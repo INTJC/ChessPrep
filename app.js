@@ -1472,7 +1472,7 @@ if (browserReady()) {
         state.side = state.openingSide;
         state.completedTerminals = new Set();
         state.lastCompletedPgn = '';
-        startTraining();
+        startTraining(state.openingSide === 'b' ? '已切换为黑方训练。' : '已切换为白方训练。');
       });
     });
     refs.reset.addEventListener('click', () => startTraining());
@@ -1790,7 +1790,7 @@ if (browserReady()) {
     resetOpeningPosition();
 
     if (!state.trainer) {
-      setStatus('先导入你的 Lichess 研讨 PGN，然后开始训练。');
+      setStatus(message || '先导入你的 Lichess 研讨 PGN，然后开始训练。');
       render();
       return;
     }

@@ -816,7 +816,8 @@ async function serveStatic(pathname, response) {
     response.writeHead(200, {
       'Content-Type': filePath.endsWith('LICENSE')
         ? 'text/plain; charset=utf-8'
-        : types[extname(filePath)] || 'application/octet-stream'
+        : types[extname(filePath)] || 'application/octet-stream',
+      'Cache-Control': 'no-store'
     });
     response.end(content);
   } catch {

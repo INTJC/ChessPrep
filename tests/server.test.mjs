@@ -38,6 +38,12 @@ test('server serves SVG files with image/svg+xml content type', () => {
   assert.equal(types['.svg'], 'image/svg+xml; charset=utf-8');
 });
 
+test('static assets are served without browser caching stale app code', () => {
+  const source = readFileSync(join(root, 'server.mjs'), 'utf8');
+  assert.match(source, /async function serveStatic/);
+  assert.match(source, /'Cache-Control': 'no-store'/);
+});
+
 test('resolveListenOptions defaults to localhost and honors explicit HOST', () => {
   assert.deepEqual(resolveListenOptions({}), { port: 8788, host: '127.0.0.1', publicUrl: 'http://localhost:8788' });
   assert.deepEqual(resolveListenOptions({ PORT: '9000', HOST: '0.0.0.0' }), { port: 9000, host: '0.0.0.0', publicUrl: 'http://localhost:9000' });
