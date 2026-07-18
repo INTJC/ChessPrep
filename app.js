@@ -11,7 +11,6 @@ import {
 } from './engine-profiles.mjs';
 import {
   DEFAULT_LOCALE,
-  LANGUAGE_STORAGE_KEY,
   applyStaticTranslations,
   localizeEndgameCategory,
   localizeEndgameLesson,
@@ -69,6 +68,19 @@ export function pieceAssetClass(piece) {
   return `piece-${color}${piece.toUpperCase()}`;
 }
 
+
+export function boardDisplayRanks(orientation = 'w') {
+  return orientation === 'b' ? [1, 2, 3, 4, 5, 6, 7, 8] : [8, 7, 6, 5, 4, 3, 2, 1];
+}
+
+export function boardDisplayFiles(orientation = 'w') {
+  return orientation === 'b' ? [...FILES].reverse() : [...FILES];
+}
+
+export function normalizeBoardOrientation(side = 'w') {
+  return side === 'b' ? 'b' : 'w';
+}
+
 export function boardSquareColor(square) {
   const file = FILES.indexOf(square[0]);
   const rank = Number(square[1]);
@@ -119,6 +131,7 @@ const state = {
   mode: 'opening',
   trainer: null,
   side: 'w',
+  openingSide: 'w',
   currentFen: normalizeFen(START_FEN),
   currentState: parseFen(START_FEN),
   selected: null,
@@ -163,13 +176,12 @@ const state = {
   activeStudyId: null,
   prep: {
     ourSide: 'w',
-    status: '正在读取本地线下数据库状态...',
-    databaseStatus: null,
-    buildSummary: null,
+    status: '先上传对手 PGN，并在开局训练中导入你的准备 PGN。',
+    opponentPgn: '',
+    opponentPgnName: '',
     report: null,
     explorerReport: null,
     loading: false,
-    building: false,
     error: false
   },
   engine: {
@@ -1360,22 +1372,30 @@ if (browserReady()) {
   let dragGhost = null;
   let dragGhostFrame = 0;
 
-  document.addEventListener('DOMContentLoaded', () => {
+  let appInitialized = false;
+
+  function initializeApp() {
+    if (appInitialized) return;
+    appInitialized = true;
     bindElements(els);
-    state.locale = loadSavedLocale();
+    state.locale = DEFAULT_LOCALE;
     applyStaticTranslations(document, currentLocale());
     state.savedStudies = loadSavedStudies();
     bindEvents(els);
     render();
-    loadPrepDatabaseStatus();
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp, { once: true });
+  } else {
+    initializeApp();
+  }
 
   function bindElements(refs) {
     refs.board = document.querySelector('[data-board]');
     refs.rankLabels = document.querySelector('[data-rank-labels]');
     refs.fileLabels = document.querySelector('[data-file-labels]');
     refs.modeButtons = [...document.querySelectorAll('[data-mode-switch]')];
-    refs.languageButtons = [...document.querySelectorAll('[data-language-option]')];
     refs.openingLeft = document.querySelector('[data-opening-left]');
     refs.openingRight = document.querySelector('[data-opening-right]');
     refs.endgameLeft = document.querySelector('[data-endgame-left]');
@@ -1412,9 +1432,9 @@ if (browserReady()) {
     refs.next = document.querySelector('[data-next]');
     refs.backStep = document.querySelector('[data-back-step]');
     refs.sample = document.querySelector('[data-sample]');
-    refs.prepDatabaseStatus = document.querySelector('[data-prep-database-status]');
-    refs.buildPrepDatabase = document.querySelector('[data-build-prep-database]');
-    refs.prepDatabaseBadge = document.querySelector('[data-prep-database-badge]');
+    refs.opponentPgnInput = document.querySelector('[data-opponent-pgn-input]');
+    refs.opponentPgnFile = document.querySelector('[data-opponent-pgn-file]');
+    refs.opponentPgnBadge = document.querySelector('[data-opponent-pgn-badge]');
     refs.prepOpponent = document.querySelector('[data-prep-opponent]');
     refs.prepSideButtons = [...document.querySelectorAll('[data-prep-side]')];
     refs.runPrepReport = document.querySelector('[data-run-prep-report]');
@@ -1442,9 +1462,6 @@ if (browserReady()) {
     refs.modeButtons.forEach((button) => {
       button.addEventListener('click', () => switchMode(button.dataset.modeSwitch));
     });
-    refs.languageButtons.forEach((button) => {
-      button.addEventListener('click', () => switchLanguage(button.dataset.languageOption));
-    });
     refs.importPgn.addEventListener('click', () => importPgn(refs.pgnInput.value, '粘贴 PGN', { sourceKey: `content:${stableHash(refs.pgnInput.value)}` }));
     refs.appendPgn?.addEventListener('click', () => appendPgnToActiveStudy(refs.pgnInput.value, '粘贴 PGN'));
     refs.fileInput.addEventListener('change', async (event) => {
@@ -1461,10 +1478,11 @@ if (browserReady()) {
     });
     refs.sideButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        state.side = button.dataset.side;
+        state.openingSide = normalizeBoardOrientation(button.dataset.side);
+        state.side = state.openingSide;
         state.completedTerminals = new Set();
         state.lastCompletedPgn = '';
-        startTraining();
+        startTraining(state.openingSide === 'b' ? '已切换为黑方训练。' : '已切换为白方训练。');
       });
     });
     refs.reset.addEventListener('click', () => startTraining());
@@ -1478,7 +1496,26 @@ if (browserReady()) {
       refs.pgnInput.value = samplePgn();
       importPgn(refs.pgnInput.value, '示例 PGN', { sourceKey: `content:${stableHash(refs.pgnInput.value)}` });
     });
-    refs.buildPrepDatabase?.addEventListener('click', buildPrepDatabase);
+    refs.opponentPgnInput?.addEventListener('input', () => {
+      state.prep.opponentPgn = refs.opponentPgnInput.value;
+      state.prep.opponentPgnName = state.prep.opponentPgn.trim() ? '粘贴 PGN' : '';
+      state.prep.report = null;
+      state.prep.explorerReport = null;
+      render();
+    });
+    refs.opponentPgnFile?.addEventListener('change', async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const content = await file.text();
+      state.prep.opponentPgn = content;
+      state.prep.opponentPgnName = file.name;
+      if (refs.opponentPgnInput) refs.opponentPgnInput.value = content;
+      state.prep.report = null;
+      state.prep.explorerReport = null;
+      state.prep.status = `已载入对手棋谱：${file.name}`;
+      state.prep.error = false;
+      render();
+    });
     refs.prepSideButtons.forEach((button) => {
       button.addEventListener('click', () => {
         state.prep.ourSide = button.dataset.prepSide === 'b' ? 'b' : 'w';
@@ -1501,68 +1538,6 @@ if (browserReady()) {
     document.addEventListener('pointerup', finishBoardDrag);
     document.addEventListener('pointercancel', cancelBoardDrag);
     document.addEventListener('keydown', handleKeyboardNavigation);
-  }
-
-  function loadSavedLocale() {
-    try {
-      return normalizeLocale(localStorage.getItem(LANGUAGE_STORAGE_KEY) || DEFAULT_LOCALE);
-    } catch {
-      return DEFAULT_LOCALE;
-    }
-  }
-
-  function persistLocale() {
-    try {
-      localStorage.setItem(LANGUAGE_STORAGE_KEY, currentLocale());
-    } catch {
-      // localStorage can be unavailable in restricted browser contexts.
-    }
-  }
-
-  function switchLanguage(locale) {
-    state.locale = normalizeLocale(locale);
-    persistLocale();
-    applyStaticTranslations(document, currentLocale());
-    render();
-  }
-
-  async function importFromUrl() {
-    const study = parseStudyUrl(els.urlInput.value);
-    if (!study) {
-      setStatus('请输入有效的 Lichess Study 链接。', true);
-      return;
-    }
-
-    setStatus('正在从 Lichess 读取公开研讨 PGN...');
-    try {
-      const response = await fetchStudyPgn(study);
-      const pgn = await response.text();
-      els.pgnInput.value = pgn;
-      const studyPath = `${study.studyId}${study.chapterId ? `/${study.chapterId}` : ''}`;
-      importPgn(pgn, `Lichess Study ${studyPath}`, { sourceKey: `lichess:${studyPath}` });
-    } catch (error) {
-      setStatus(`无法自动导入：${error.message}。如果研讨是私密的，请在 Lichess 导出 PGN 后粘贴或上传。`, true);
-    }
-  }
-
-  async function fetchStudyPgn(study) {
-    const urls = buildStudyPgnUrls(study);
-
-    let lastError = null;
-    for (const url of urls) {
-      try {
-        const response = await fetch(url, {
-          credentials: 'same-origin',
-          headers: { Accept: 'application/x-chess-pgn,text/plain,*/*' }
-        });
-        if (response.ok) return response;
-        lastError = new Error(`HTTP ${response.status}`);
-      } catch (error) {
-        lastError = error;
-      }
-    }
-
-    throw lastError || new Error('Study PGN request failed');
   }
 
   function switchMode(mode) {
@@ -1597,7 +1572,7 @@ if (browserReady()) {
       state.opponentChoices = [];
       setPrepBranchStatus('备战模式：先在棋盘上选到具体开局分支，再生成报告。');
     } else {
-      state.side = state.trainer ? state.side : 'w';
+      state.side = state.trainer ? state.openingSide : 'w';
       state.currentFen = state.trainer?.rootFen ?? normalizeFen(START_FEN);
       state.currentState = stateFromKeyFen(state.currentFen);
       state.lastMove = null;
@@ -1754,75 +1729,14 @@ if (browserReady()) {
     startTraining();
   }
 
-  async function loadPrepDatabaseStatus() {
-    state.prep.loading = true;
-    state.prep.error = false;
-    render();
-    try {
-      const response = await fetch('/prep-database-status', {
-        headers: { Accept: 'application/json' }
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
-      state.prep.databaseStatus = payload;
-      state.prep.status = formatPrepDatabaseStatus(payload);
-      state.prep.error = false;
-    } catch (error) {
-      state.prep.status = `读取本地线下数据库失败：${error.message}`;
-      state.prep.error = true;
-    } finally {
-      state.prep.loading = false;
-      render();
-    }
-  }
-
-  async function buildPrepDatabase() {
-    state.prep.loading = true;
-    state.prep.building = true;
-    state.prep.error = false;
-    state.prep.status = '正在从已下载线下 PGN 构建数据库，数据量较大时可能需要数分钟...';
-    render();
-    try {
-      const response = await fetch('/prep-database-build', {
-        method: 'POST',
-        headers: { Accept: 'application/json' }
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
-      state.prep.buildSummary = payload;
-      state.prep.databaseStatus = {
-        ready: true,
-        games: payload.importedGames || 0,
-        sources: payload.sources || 0,
-        importedSources: payload.files?.length || payload.sources || 0,
-        storeBytes: payload.compactBytes || 0,
-        updatedAt: payload.completedAt || null
-      };
-      state.prep.status = `数据库已构建：${payload.importedGames || 0} 盘合格对局，过滤 ${payload.skippedByFilter || 0} 盘。`;
-      state.prep.error = false;
-    } catch (error) {
-      state.prep.status = `数据库构建失败：${error.message}`;
-      state.prep.error = true;
-    } finally {
-      state.prep.loading = false;
-      state.prep.building = false;
-      render();
-    }
-  }
-
   async function runPrepReport(options = {}) {
     const focus = options?.focus?.fen ? options.focus : null;
     const opponent = String(els.prepOpponent?.value || '').trim();
     const active = state.savedStudies.find((study) => study.id === state.activeStudyId);
     const prepPgn = active?.pgn || '';
-    if (!state.prep.databaseStatus?.ready) {
-      state.prep.status = '请先构建本地线下对局库。';
-      state.prep.error = true;
-      render();
-      return;
-    }
-    if (!opponent) {
-      state.prep.status = '请先输入对手姓名。';
+    const opponentPgn = String(state.prep.opponentPgn || els.opponentPgnInput?.value || '').trim();
+    if (!opponentPgn) {
+      state.prep.status = '请先上传或粘贴对手 PGN。';
       state.prep.error = true;
       render();
       return;
@@ -1836,7 +1750,7 @@ if (browserReady()) {
 
     state.prep.loading = true;
     state.prep.error = false;
-    state.prep.status = '正在比对线下对局和当前开局准备...';
+    state.prep.status = '正在分析上传棋谱并比对当前开局准备...';
     render();
     try {
       const response = await fetch('/prep-report', {
@@ -1844,6 +1758,8 @@ if (browserReady()) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           opponent,
+          opponentPgn,
+          opponentPgnName: state.prep.opponentPgnName || 'uploaded-opponent.pgn',
           ourSide: state.prep.ourSide,
           prepPgn,
           focusFen: focus?.fen || state.currentFen,
@@ -1857,7 +1773,7 @@ if (browserReady()) {
       state.prep.report = payload;
       state.prep.explorerReport = payload;
       const treeStatus = formatPrepOpeningTreeStatus(payload.openingTree);
-      state.prep.status = `已生成报告：${payload.sampleGames || 0} 盘对手样本${treeStatus ? `，${treeStatus}` : ''}。`;
+      state.prep.status = `已生成报告：${payload.sampleGames || 0} 盘上传棋谱样本${treeStatus ? `，${treeStatus}` : ''}。`;
       state.prep.error = false;
     } catch (error) {
       state.prep.status = `备战报告生成失败：${error.message}`;
@@ -1884,7 +1800,7 @@ if (browserReady()) {
     resetOpeningPosition();
 
     if (!state.trainer) {
-      setStatus('先导入你的 Lichess 研讨 PGN，然后开始训练。');
+      setStatus(message || '先导入你的 Lichess 研讨 PGN，然后开始训练。');
       render();
       return;
     }
@@ -2951,12 +2867,17 @@ if (browserReady()) {
     renderPromotionPicker();
   }
 
+  function currentBoardOrientation() {
+    return state.mode === 'opening' ? state.openingSide : normalizeBoardOrientation(state.side);
+  }
+
   function renderBoard() {
     if (!els.board) return;
     els.board.innerHTML = '';
     els.board.classList.toggle('is-wrong', state.wrongFlash);
-    const ranks = state.side === 'w' ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8];
-    const files = state.side === 'w' ? [...FILES] : [...FILES].reverse();
+    const orientation = currentBoardOrientation();
+    const ranks = boardDisplayRanks(orientation);
+    const files = boardDisplayFiles(orientation);
     const legalTargets = state.selected ? getLegalDestinationSquares(state.currentFen, state.selected) : [];
     renderBoardLabels(ranks, files);
 
@@ -3054,7 +2975,7 @@ if (browserReady()) {
     renderSavedStudies();
 
     els.sideButtons.forEach((button) => {
-      button.classList.toggle('active', button.dataset.side === state.side);
+      button.classList.toggle('active', button.dataset.side === state.openingSide);
     });
 
     const accuracy = state.stats.attempts ? Math.round((state.stats.correct / state.stats.attempts) * 100) : 100;
@@ -3128,8 +3049,8 @@ if (browserReady()) {
         : `Endgame Training · ${listEndgameLessons().length} tasks`;
     }
     if (state.mode === 'prep') {
-      const total = state.prep.databaseStatus?.games || state.prep.buildSummary?.importedGames || 0;
-      return currentLocale() === 'zh' ? `备战模式 · ${total} 盘线下对局` : `Prep Mode · ${total} offline games`;
+      const total = state.prep.report?.sampleGames || 0;
+      return total ? `备战模式 · ${total} 盘上传棋谱` : '备战模式 · 上传 PGN';
     }
     return state.trainer
       ? currentLocale() === 'zh'
@@ -3156,16 +3077,10 @@ if (browserReady()) {
     if (!els.prepStatus) return;
     els.prepStatus.textContent = localizeMessage(state.prep.status);
     els.prepStatus.dataset.tone = state.prep.error ? 'error' : 'normal';
-    const database = state.prep.databaseStatus;
-    if (els.prepDatabaseBadge) {
-      els.prepDatabaseBadge.textContent = state.prep.building
-        ? currentLocale() === 'zh' ? '构建中' : 'Building'
-        : database?.ready
-          ? tr('prep.ready')
-          : tr('prep.notBuilt');
-    }
-    if (els.prepDatabaseStatus) {
-      els.prepDatabaseStatus.innerHTML = renderPrepDatabaseStatus(database);
+    if (els.opponentPgnBadge) {
+      els.opponentPgnBadge.textContent = state.prep.opponentPgn?.trim()
+        ? state.prep.opponentPgnName || '已上传'
+        : '未上传';
     }
     els.prepReportBadge.textContent = state.prep.report
       ? `${state.prep.report.sampleGames || 0}`
@@ -3174,7 +3089,6 @@ if (browserReady()) {
       button.classList.toggle('active', button.dataset.prepSide === state.prep.ourSide);
     });
     if (els.runPrepReport) els.runPrepReport.disabled = state.prep.loading;
-    if (els.buildPrepDatabase) els.buildPrepDatabase.disabled = state.prep.loading || state.prep.building;
 
     const report = state.prep.report;
     const explorerReport = state.prep.explorerReport || report;
@@ -3196,47 +3110,7 @@ if (browserReady()) {
         button.addEventListener('click', () => selectPrepOpponentReply(button.dataset.prepReplyIndex));
       });
     }
-    els.dataPrepReport.innerHTML = report ? renderPrepReportSections(report) : `<p class="empty">${tr('prep.reportEmpty')}</p>`;
-  }
-
-  function renderPrepDatabaseStatus(database) {
-    if (state.prep.loading && !database) {
-      return `
-        <strong>${tr('prep.databaseStatus')}</strong>
-        <span>${tr('prep.statusLoading')}</span>
-      `;
-    }
-    if (!database?.ready) {
-      const sources = Number(database?.sources) || 0;
-      const text = currentLocale() === 'zh'
-        ? `未构建。已发现 ${sources} 个线下 PGN 源，点击按钮自动构建。`
-        : `Not built. ${sources} offline PGN sources found. Press the button to build.`;
-      return `
-        <strong>${tr('prep.databaseStatus')}</strong>
-        <span>${escapeHtml(text)}</span>
-      `;
-    }
-    const games = Number(database.games) || 0;
-    const sources = Number(database.importedSources ?? database.sources) || 0;
-    const size = formatBytes(database.storeBytes || 0);
-    const updated = database.updatedAt ? String(database.updatedAt).slice(0, 19).replace('T', ' ') : '';
-    const text = currentLocale() === 'zh'
-      ? `${games} 盘合格对局 · ${sources} 个来源 · ${size}${updated ? ` · 更新 ${updated}` : ''}`
-      : `${games} eligible games · ${sources} sources · ${size}${updated ? ` · updated ${updated}` : ''}`;
-    return `
-      <strong>${tr('prep.databaseStatus')}</strong>
-      <span>${escapeHtml(text)}</span>
-    `;
-  }
-
-  function formatPrepDatabaseStatus(database) {
-    if (!database?.ready) {
-      const sources = Number(database?.sources) || 0;
-      return sources
-        ? `本地线下库尚未构建。已发现 ${sources} 个 PGN 源，点击“构建/更新数据库”。`
-        : '本地线下库尚未构建，且没有发现可用 PGN 源。';
-    }
-    return `本地线下库已就绪：${database.games || 0} 盘合格对局。`;
+    els.dataPrepReport.innerHTML = report ? renderPrepReportSections(report) : `<p class="empty">上传对手 PGN 后，报告会列出未见准备、低样本分支、表现差分支和准备缺口。</p>`;
   }
 
   function formatPrepOpeningTreeStatus(openingTree) {

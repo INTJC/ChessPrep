@@ -23,10 +23,6 @@
           <button class="mode-button" type="button" data-mode-switch="endgame" data-i18n="mode.endgame">残局训练</button>
           <button class="mode-button" type="button" data-mode-switch="prep" data-i18n="mode.prep">备战模式</button>
         </nav>
-        <nav class="language-switch" aria-label="Language" data-language-switch>
-          <button class="language-button active" type="button" data-language-option="zh" aria-pressed="true" data-i18n="lang.zh">中文</button>
-          <button class="language-button" type="button" data-language-option="en" aria-pressed="false" data-i18n="lang.en">English</button>
-        </nav>
         <div class="top-status">
           <span data-i18n="top.importStatus">导入状态</span>
           <strong data-import-status data-i18n="status.notImported">尚未导入</strong>
@@ -107,19 +103,23 @@
 
           <div class="prep-panel hidden" data-prep-left>
             <div class="panel-heading">
-              <h2 data-i18n="prep.database">线下棋谱库</h2>
-              <span data-prep-database-badge data-i18n="prep.notBuilt">未构建</span>
+              <h2>备战棋谱</h2>
+              <span data-opponent-pgn-badge>未上传</span>
             </div>
-            <div class="database-status" data-prep-database-status>
-              <strong data-i18n="prep.databaseStatus">数据库状态</strong>
-              <span data-i18n="prep.statusLoading">正在读取本地数据库状态...</span>
-            </div>
-            <button class="primary-button wide" type="button" data-build-prep-database data-i18n="prep.buildDatabase">构建/更新数据库</button>
-            <p class="note" data-i18n="prep.databaseNote">系统会从已下载的公开线下 PGN 源自动构建，不需要手动导入对手棋谱；过滤条件：2010 年之后，双方 Elo 都大于 2000。</p>
-            <div class="divider"></div>
+            <label class="field compact-field">
+              <span>上传对手 PGN</span>
+              <label class="file-button">
+                <span>选择 .pgn 文件</span>
+                <input data-opponent-pgn-file type="file" accept=".pgn,text/plain,application/x-chess-pgn">
+              </label>
+            </label>
+            <label class="field compact-field">
+              <span>或粘贴对手 PGN</span>
+              <textarea data-opponent-pgn-input class="compact-textarea" spellcheck="false" placeholder="粘贴对手公开对局 PGN；留空姓名时会分析全部上传对局。"></textarea>
+            </label>
             <label class="field">
-              <span data-i18n="prep.opponent">对手姓名</span>
-              <input data-prep-opponent type="text" placeholder="例如 丁立人 / Ding Liren" data-i18n-placeholder="prep.opponentPlaceholder">
+              <span>对手姓名（可选）</span>
+              <input data-prep-opponent type="text" placeholder="例如 丁立人 / Ding Liren">
             </label>
             <div class="side-picker" aria-label="备战执棋方" data-i18n-aria-label="prep.ourSide">
               <span data-i18n="prep.ourSide">我方执棋</span>
@@ -131,7 +131,7 @@
             <button class="primary-button wide" type="button" data-run-prep-report data-i18n="prep.runReport">生成备战报告</button>
             <section class="prep-common-replies" data-prep-common-replies>
               <h3 data-i18n="prep.commonReplies">对手开局树</h3>
-              <p class="empty" data-i18n="prep.commonRepliesEmpty">生成报告后，这里会像 Lichess 开局树一样按当前局面更新：对手下过哪些步、次数、占比和得分率。</p>
+              <p class="empty">上传棋谱并生成报告后，这里显示当前局面的对手常见选择。</p>
             </section>
           </div>
         </aside>
@@ -255,7 +255,7 @@
               <h2 data-i18n="prep.report">备战报告</h2>
               <span data-prep-report-badge data-i18n="prep.waiting">待生成</span>
             </div>
-            <p class="current-task" data-prep-status data-i18n="prep.status">先构建本地线下对局库，再输入对手并生成报告。</p>
+            <p class="current-task" data-prep-status>先上传对手 PGN，并在开局训练中导入你的准备 PGN。</p>
             <div class="stats-grid" data-prep-stats>
               <div><strong>0</strong><span data-i18n="prep.sampleGames">样本</span></div>
               <div><strong>0</strong><span data-i18n="prep.unseen">未见</span></div>
