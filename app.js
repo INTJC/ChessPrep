@@ -1540,6 +1540,44 @@ if (browserReady()) {
     document.addEventListener('keydown', handleKeyboardNavigation);
   }
 
+  async function importFromUrl() {
+    const study = parseStudyUrl(els.urlInput.value);
+    if (!study) {
+      setStatus('请输入有效的 Lichess Study 链接。', true);
+      return;
+    }
+
+    setStatus('正在从 Lichess 读取公开研讨 PGN...');
+    try {
+      const response = await fetchStudyPgn(study);
+      const pgn = await response.text();
+      els.pgnInput.value = pgn;
+      const studyPath = `${study.studyId}${study.chapterId ? `/${study.chapterId}` : ''}`;
+      importPgn(pgn, `Lichess Study ${studyPath}`, { sourceKey: `lichess:${studyPath}` });
+    } catch (error) {
+      setStatus(`无法自动导入：${error.message}。如果研讨是私密的，请在 Lichess 导出 PGN 后粘贴或上传。`, true);
+    }
+  }
+
+  async function fetchStudyPgn(study) {
+    const urls = buildStudyPgnUrls(study);
+    let lastError = null;
+
+    for (const url of urls) {
+      try {
+        const response = await fetch(url, {
+          credentials: 'same-origin',
+          headers: { Accept: 'application/x-chess-pgn,text/plain,*/*' }
+        });
+        if (response.ok) return response;
+        lastError = new Error(`HTTP ${response.status}`);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError || new Error('Study PGN request failed');
+  }
   function switchMode(mode) {
     state.mode = mode === 'endgame' ? 'endgame' : mode === 'prep' ? 'prep' : 'opening';
     state.selected = null;

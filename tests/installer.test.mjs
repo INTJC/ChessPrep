@@ -405,6 +405,15 @@ test('browser app initializes even if module executes after DOMContentLoaded', (
   assert.match(app, /else \{\s*initializeApp\(\);\s*\}/);
 });
 
+test('every opening toolbar handler is defined before browser events are bound', () => {
+  const app = readProjectFile('app.js');
+  assert.match(app, /async function importFromUrl\(\)/);
+  assert.match(app, /async function fetchStudyPgn\(study\)/);
+  assert.match(app, /refs\.importUrl\.addEventListener\('click', importFromUrl\)/);
+  assert.match(app, /refs\.sideButtons\.forEach[\s\S]*button\.addEventListener\('click'/);
+  assert.match(app, /refs\.reset\.addEventListener\('click'/);
+  assert.match(app, /refs\.backStep\?\.addEventListener\('click'/);
+});
 test('top feedback is dynamic and not statically reset to the opening import prompt', () => {
   const html = readProjectFile('index.html');
   const app = readProjectFile('app.js');
