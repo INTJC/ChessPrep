@@ -1376,13 +1376,13 @@ if (browserReady()) {
 
   function initializeApp() {
     if (appInitialized) return;
+    appInitialized = true;
     bindElements(els);
     state.locale = DEFAULT_LOCALE;
     applyStaticTranslations(document, currentLocale());
     state.savedStudies = loadSavedStudies();
     bindEvents(els);
     render();
-    appInitialized = true;
   }
 
   if (document.readyState === 'loading') {
@@ -1578,7 +1578,6 @@ if (browserReady()) {
 
     throw lastError || new Error('Study PGN request failed');
   }
-
   function switchMode(mode) {
     state.mode = mode === 'endgame' ? 'endgame' : mode === 'prep' ? 'prep' : 'opening';
     state.selected = null;
