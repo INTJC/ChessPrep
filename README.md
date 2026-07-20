@@ -5,8 +5,8 @@
 <h1 align="center">ChessPrep Lab</h1>
 
 <p align="center">
-  <strong>本地优先的国际象棋备战、开局记忆、残局训练和拟人对练工作台。</strong><br>
-  <strong>A local-first chess preparation workspace for opening recall, opponent prep, endgame training, and human-like sparring.</strong>
+  <strong>面向 MacBook 的本地优先国际象棋备战、开局记忆、残局训练和拟人对练工作台。</strong><br>
+  <strong>A Mac-friendly local-first chess preparation workspace for opening recall, opponent prep, endgame training, and human-like sparring.</strong>
 </p>
 
 <p align="center">
@@ -34,10 +34,10 @@ ChessPrep Lab 是一个本地运行的国际象棋训练工作台，用来把 Li
 ### 核心功能
 
 - **开局训练**：导入 Lichess Study PGN 后，系统把主线和变化树解析成可训练的准备库。你必须在棋盘上走出自己的准备着法，系统会按 PGN 变化树自动选择对手回应；走错时会提示当前位置的候选准备。
-- **备战检索**：离线检索对手历史对局，生成对手常走分支、样本数、胜率、和局率和得分率，再和你的准备库对照，帮助你优先补最可能遇到的线路。
+- **上传棋谱备战**：上传或粘贴对手 PGN，生成对手常走分支、样本数、胜率、和局率和得分率，再和你的准备库对照，帮助你优先补最可能遇到的线路。
 - **残局训练**：课程来自高水平实战局面，不是随机题库。每题从真实 FEN 开始，要求沿着可验证主线完成赢棋或守和目标。
 - **拟人训练 / 引擎训练**：从准备局面继续下，默认使用 Maia-3 23M 候选走法加 Stockfish 过滤；源码运行可切换 79M，训练离开准备后的实战处理。
-- **双语界面**：应用界面支持中文和英文切换，适合本地自用、教学演示和小范围分享。
+- **中文简洁界面**：移除语言切换和冗余说明，优先为 MacBook 屏幕保留更大的棋盘区域。
 
 ### 快速启动
 
@@ -59,18 +59,30 @@ http://localhost:8788
 $env:PORT=8790; node server.mjs
 ```
 
-### Windows 离线安装包
+### macOS 本地版
 
-| 版本 | 下载 | 大小 | SHA-256 |
-| --- | --- | ---: | --- |
-| Maia-3 23M 标准版 | [ChessPrep-Lab-Setup.exe](https://github.com/zhukaizhen/ChessPrep/releases/download/v1.0.0/ChessPrep-Lab-Setup.exe) | 343,270,720 字节 | `5E4B5E21EB4FED74215C0543F1B6C7BC71A330AACB72484D2AEB443081420351` |
-| Maia-3 79M 高精度版 | [ChessPrep-Lab-Maia3-79M-Setup.exe](https://github.com/zhukaizhen/ChessPrep/releases/download/v1.0.0/ChessPrep-Lab-Maia3-79M-Setup.exe) | 545,155,926 字节 | `19FC5C4950ACA8FB019C35728149B96E31369F42D16BE2D4B135728998F21D02` |
+从 GitHub 下载 `ChessPrep-Lab-macOS-*.zip` 后解压，进入目录运行：
 
-两个安装包都包含 Node.js、Stockfish、Maia-3 Python 环境和本地模型缓存，不需要首次启动再下载模型。标准版更省磁盘和内存；79M 版模型更大、CPU 推理更慢，但使用 Maia-3 的最高精度模型。
+```bash
+chmod +x start-macos.sh
+./start-macos.sh
+```
+
+备战模式不再要求构建大型离线数据库。请在“备战模式”上传或粘贴对手 PGN；对手姓名可选，留空时会分析上传文件中的全部对局。
+
+如需自行打包 macOS ZIP：
+
+```bash
+scripts/build-macos-zip.sh
+```
+
+不想在本地运行命令时，可以在 fork 仓库的 GitHub Actions 中手动运行 `Build macOS package`，完成后从 workflow artifacts 或可选 Release 附件下载 ZIP。
+
+详细说明见 [macOS 本地部署指南](README-macOS.md)。
 
 ### 数据规模
 
-备战模式使用本机离线对局库做检索分析。以下是开发机在 `2026-06-09` 的数据快照，不是每次构建都固定得到的结果：
+旧版备战模式曾使用本机离线对局库。当前 macOS 版本改为上传对手 PGN，不再要求这些大型数据文件。以下只是历史开发机快照：
 
 - 可检索对局：`2,706,692` 盘。
 - 已扫描数据源：`809` 个 PGN 源文件。
@@ -114,10 +126,10 @@ ChessPrep Lab is a local chess preparation workspace that brings Lichess Study i
 ### What It Does
 
 - **Opening trainer**: import a Lichess Study PGN and turn the main lines and variations into a playable training tree. You make your prep moves on the board; the app chooses opponent replies from the PGN tree and shows candidate prep moves when you miss.
-- **Opponent preparation**: search an offline game database, build an opponent opening tree, and compare the opponent's most common branches against your own preparation.
+- **Opponent preparation**: upload or paste opponent PGN, build an opponent opening tree, and compare the opponent's most common branches against your own preparation.
 - **Endgame trainer**: train from real high-level game positions with verifiable solution lines, focused on practical conversion and defensive technique rather than one-move tactics.
 - **Human-like sparring**: continue from a prepared position using Maia-3 23M by default, or optional 79M for source installs, with Stockfish quality filtering to avoid obvious blunders.
-- **Bilingual interface**: the app UI supports Chinese and English for local training, teaching, and small-group demos.
+- **Simplified Chinese interface**: the visible app chrome is Chinese-only and prioritizes a larger board on MacBook screens.
 
 ### Quick Start
 
@@ -150,7 +162,7 @@ Both installers bundle Node.js, Stockfish, the Maia-3 Python environment, and a 
 
 ### Local Data
 
-Opponent prep uses a local offline game database. The figures below are a development-machine snapshot from `2026-06-09`, not a fixed result of every build:
+Opponent prep now uses uploaded PGN files instead of a required local offline game database. The figures below are only a historical development-machine snapshot from `2026-06-09`:
 
 - Searchable games: `2,706,692`.
 - Scanned PGN sources: `809`.
@@ -202,8 +214,8 @@ The repository tracks the core app and documentation media. The following genera
 
 ## Tests
 
-Run the core parser and trainer tests with:
+Run the core parser, trainer, and uploaded-PGN prep tests with:
 
 ```powershell
-node --test tests\server.test.mjs tests\trainer-core.test.mjs
+node --test tests\server.test.mjs tests\trainer-core.test.mjs tests\uploaded-pgn-prep.test.mjs
 ```

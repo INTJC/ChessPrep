@@ -342,8 +342,9 @@ test('HTML exposes opening and endgame training panes', () => {
   assert.match(html, /data-endgame-right/);
   assert.match(html, /data-prep-left/);
   assert.match(html, /data-prep-right/);
-  assert.match(html, /data-prep-database-status/);
-  assert.match(html, /data-build-prep-database/);
+  assert.match(html, /data-opponent-pgn-file/);
+  assert.match(html, /data-opponent-pgn-input/);
+  assert.match(html, /data-opponent-pgn-badge/);
   assert.match(html, /data-prep-common-replies/);
   assert.doesNotMatch(html, /data-offline-pgn-input/);
   assert.match(html, /data-run-prep-report/);
@@ -352,14 +353,16 @@ test('HTML exposes opening and endgame training panes', () => {
   assert.match(html, /data-endgame-answer/);
 });
 
-test('frontend prep mode reads and builds the prebuilt offline database before reports', () => {
+test('frontend prep mode uploads opponent PGN before reports', () => {
   const app = readProjectFile('app.js');
   const i18n = readProjectFile('i18n.js');
   const prepReport = readProjectFile('tools', 'player-prep', 'prep-report.mjs');
 
-  assert.match(app, /fetch\('\/prep-database-status'/);
-  assert.match(app, /fetch\('\/prep-database-build'/);
+  assert.doesNotMatch(app, /fetch\('\/prep-database-status'/);
+  assert.doesNotMatch(app, /fetch\('\/prep-database-build'/);
   assert.match(app, /fetch\('\/prep-report'/);
+  assert.match(app, /opponentPgn/);
+  assert.match(app, /opponentPgnName/);
   assert.match(app, /focusFen:\s*focus\?\.fen\s*\|\|\s*state\.currentFen/);
   assert.match(app, /:\s*state\.moveHistory\.length/);
   assert.match(app, /focusLineFromPrepScope\(focus\)\s*:\s*formatMoveHistoryPgn\(state\.moveHistory\)/);
@@ -392,6 +395,26 @@ test('frontend prep mode reads and builds the prebuilt offline database before r
   assert.match(prepReport, /explorer:\s*makeOpponentExplorer\(opponentTree\)/);
 });
 
+
+
+test('browser app initializes even if module executes after DOMContentLoaded', () => {
+  const app = readProjectFile('app.js');
+  assert.match(app, /function initializeApp\(\)/);
+  assert.match(app, /if \(document\.readyState === 'loading'\)/);
+  assert.match(app, /document\.addEventListener\('DOMContentLoaded', initializeApp, \{ once: true \}\)/);
+  assert.match(app, /else \{\s*initializeApp\(\);\s*\}/);
+});
+
+test('every opening toolbar handler is defined before browser events are bound', () => {
+  const app = readProjectFile('app.js');
+  assert.match(app, /async function importFromUrl\(\)/);
+  assert.match(app, /async function fetchStudyPgn\(study\)/);
+  assert.match(app, /refs\.importUrl\.addEventListener\('click', importFromUrl\)/);
+  assert.match(app, /refs\.sideButtons\.forEach[\s\S]*button\.addEventListener\('click'/);
+  assert.match(app, /refs\.reset\.addEventListener\('click'/);
+  assert.match(app, /refs\.backStep\?\.addEventListener\('click'/);
+});
+
 test('top feedback is dynamic and not statically reset to the opening import prompt', () => {
   const html = readProjectFile('index.html');
   const app = readProjectFile('app.js');
@@ -402,13 +425,13 @@ test('top feedback is dynamic and not statically reset to the opening import pro
   assert.match(app, /if \(mode === 'endgame'\) return endgameMessage \?\? '';/);
 });
 
-test('HTML exposes a Chinese-default language switch with i18n markers', () => {
+test('HTML uses Chinese-only chrome without a language switch', () => {
   const html = readProjectFile('index.html');
 
   assert.match(html, /<html lang="zh-CN"/);
-  assert.match(html, /data-language-switch/);
-  assert.match(html, /data-language-option="zh"/);
-  assert.match(html, /data-language-option="en"/);
+  assert.doesNotMatch(html, /data-language-switch/);
+  assert.doesNotMatch(html, /data-language-option="zh"/);
+  assert.doesNotMatch(html, /data-language-option="en"/);
   assert.match(html, /data-i18n="mode\.opening"/);
   assert.match(html, /data-i18n-placeholder="opening\.pgnPlaceholder"/);
   assert.match(html, /data-i18n="engine\.sparring"/);
